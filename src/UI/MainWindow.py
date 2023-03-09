@@ -30,7 +30,6 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.estimator = pose_estimation.POSE_ESTIMATOR()
 
-        self.statusBar().showMessage("Ready")
         self.GRID = QGridLayout(widget)
         self.setCentralWidget(widget)
 
