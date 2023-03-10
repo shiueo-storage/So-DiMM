@@ -1,6 +1,8 @@
+from src.FUNCTION.pose_estimation.yolov7.models.yolo import Model
 from utils import global_path
 import torch
 from torchvision import transforms
+
 
 from src.FUNCTION.pose_estimation.yolov7.utils.datasets import letterbox
 from src.FUNCTION.pose_estimation.yolov7.utils.general import non_max_suppression_kpt
@@ -13,16 +15,18 @@ import numpy as np
 class POSE_ESTIMATOR:
     def __init__(self):
         super(POSE_ESTIMATOR, self).__init__()
-
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model = torch.load(global_path.get_proj_abs_path("assets/models/yolov7-w6-pose.pt"), map_location=self.device)['model']
+
+        print(f"device: {self.device} selected")
+        self.model = Model()
+        self.model = self.model.load_state_dict(torch.load(global_path.get_proj_abs_path("assets/models/yolov7-w6-pose.pt"), map_location=self.device)['model'])
 
         self.model.float().eval()
 
         if torch.cuda.is_available():
             self.model.half().to(self.device)
 
-        print(f"device: {self.device}, model loaded")
+        print(f"model loaded")
 
     def run_inference(self, image):
         image = letterbox(image, 960, stride=64, auto=True)[0]
