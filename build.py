@@ -34,10 +34,10 @@ with open("config/config.json", "r") as j:
     config = json.load(j)
 
 build.build(
-    withconsole=False,
+    withconsole=True,
     path=os.path.abspath("SoDiMM.py"),
     file_dict=["assets", "config"],
-    companyname="shiüo & ileeric",
+    companyname="shiüoileeric",
     product_version=config["version"],
     icon=global_path.get_proj_abs_path("assets/sodimm_icon.png"),
     plugin_dict=["pyside6"],

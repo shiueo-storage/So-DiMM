@@ -1,11 +1,16 @@
+import subprocess
+
 import cv2
 from PIL import Image
 
+from src.FUNCTION.deface import deface
 from utils import global_path
+
+LOW_RES_WH = 128
 
 
 class Pose_Estimator:
-    def __init__(self):
+    def __init__(self, need_test=False):
         super(Pose_Estimator, self).__init__()
         self.BODY_PARTS = {
             "Head": 0,
@@ -43,43 +48,60 @@ class Pose_Estimator:
             ["LKnee", "LAnkle"],
         ]
 
-        self.protoFile = global_path.get_proj_abs_path("assets/models/pose_deploy_linevec.prototxt")
-        self.weightsFile = global_path.get_proj_abs_path("assets/models/pose_iter_440000.caffemodel")
+        self.protoFile = global_path.get_proj_abs_path(
+            "assets/models/pose_deploy_linevec.prototxt"
+        )
+        self.weightsFile = global_path.get_proj_abs_path(
+            "assets/models/pose_iter_440000.caffemodel"
+        )
 
         self.net = cv2.dnn.readNetFromCaffe(self.protoFile, self.weightsFile)
+        self.need_test = need_test
         print("model loaded")
 
     def video_estimate(self, video):
         cap = cv2.VideoCapture(video)
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         frame_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = cap.get(cv2.CAP_PROP_FPS)
 
         print(frame_num, fps)
 
-        out = cv2.VideoWriter(global_path.get_proj_abs_path("assets/test/test_out.mp4"), fourcc, fps, (256,256))
+        out = cv2.VideoWriter(
+            global_path.get_proj_abs_path("assets/test/test_out.mp4"),
+            fourcc,
+            fps,
+            (LOW_RES_WH, LOW_RES_WH),
+        )
 
         frame_count = 0
         while cap.isOpened():
             (ret, frame) = cap.read()
-            frame_count+=1
+            frame_count += 1
             if ret:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frame = self.image_estimate(frame)
-                cv2.imshow("asdasd",frame)
-                cv2.waitKey(10)
-                out.write(frame)
+                if self.need_test:
+                    cv2.imshow("asdasd", frame)
+                    cv2.waitKey(10)
+                    out.write(frame)
                 print(f"FRAME: {frame_count} / {frame_num}")
             else:
                 break
         cap.release()
         out.release()
         cv2.destroyAllWindows()
-        print('done')
+
+        deface.video_deface(global_path.get_proj_abs_path("assets/test/test_video.mp4"))
+        print("defacing end")
+
+        print("done")
 
     def image_estimate(self, image):
-        image = cv2.resize(image, (256,256))
-        image_Blob = cv2.dnn.blobFromImage(image, 1.0 / 255, (256, 256), (0, 0, 0), swapRB=False, crop=False)
+        image = cv2.resize(image, (LOW_RES_WH, LOW_RES_WH))
+        image_Blob = cv2.dnn.blobFromImage(
+            image, 1.0 / 255, (LOW_RES_WH, LOW_RES_WH), (0, 0, 0), swapRB=False, crop=False
+        )
         self.net.setInput(image_Blob)
         output = self.net.forward()
 
@@ -95,8 +117,8 @@ class Pose_Estimator:
             minVal, prob, minLoc, point = cv2.minMaxLoc(probMap)
 
             # 원래 이미지에 맞게 점 위치 변경
-            x = (256 * point[0]) / W
-            y = (256 * point[1]) / H
+            x = (LOW_RES_WH * point[0]) / W
+            y = (LOW_RES_WH * point[1]) / H
 
             # 키포인트 검출한 결과가 0.1보다 크면(검출한곳이 위 BODY_PARTS랑 맞는 부위면) points에 추가, 검출했는데 부위가 없으면 None으로
             if prob > 0.1:

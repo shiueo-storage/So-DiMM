@@ -28,8 +28,10 @@ class sodimm_UI_MainWindow(QMainWindow):
         menubar.setup(w=self)
         window.setup(w=self)
 
-        self.estimator = pose_estimation.Pose_Estimator()
-        self.estimator.video_estimate(global_path.get_proj_abs_path("assets/test/test_video.mp4"))
+        self.estimator = pose_estimation.Pose_Estimator(need_test=True)
+        self.estimator.video_estimate(
+            global_path.get_proj_abs_path("assets/test/test_video.mp4")
+        )
         self.GRID = QGridLayout(widget)
         self.setCentralWidget(widget)
 
