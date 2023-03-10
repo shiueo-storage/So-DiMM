@@ -51,7 +51,7 @@ print("loaded")
 net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
 
 # 이미지 읽어오기
-image = Image.open("wfwefew.jpg").convert('RGB')
+image = Image.open("ytw.jpg").convert("RGB")
 image = image.resize((256, 256))
 image = numpy.array(image)
 

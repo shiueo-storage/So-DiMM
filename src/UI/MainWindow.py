@@ -28,10 +28,8 @@ class sodimm_UI_MainWindow(QMainWindow):
         menubar.setup(w=self)
         window.setup(w=self)
 
-        self.estimator = pose_estimation.POSE_ESTIMATOR()
-
-        self.estimator.pose_estimation_video(global_path.get_proj_abs_path("assets/test/test_video.mp4"))
-
+        self.estimator = pose_estimation.Pose_Estimator()
+        self.estimator.video_estimate(global_path.get_proj_abs_path("assets/test/test_video.mp4"))
         self.GRID = QGridLayout(widget)
         self.setCentralWidget(widget)
 
@@ -44,7 +42,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
