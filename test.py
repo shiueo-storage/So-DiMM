@@ -1,6 +1,8 @@
 import os
 
 import cv2
+import numpy
+from PIL import Image
 from utils import global_path
 
 global_path.set_proj_abs_path(os.path.abspath(__file__))
@@ -49,7 +51,9 @@ print("loaded")
 net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
 
 # 이미지 읽어오기
-image = cv2.imread("test.jpg")
+image = Image.open("wfwefew.jpg").convert('RGB')
+image = image.resize((256, 256))
+image = numpy.array(image)
 
 # frame.shape = 불러온 이미지에서 height, width, color 받아옴
 imageHeight, imageWidth, _ = image.shape

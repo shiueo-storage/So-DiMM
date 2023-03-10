@@ -1,68 +1,83 @@
-import cv2
-
 from utils import global_path
+import torch
+from torchvision import transforms
 
-BODY_PARTS = {
-    "Head": 0,
-    "Neck": 1,
-    "RShoulder": 2,
-    "RElbow": 3,
-    "RWrist": 4,
-    "LShoulder": 5,
-    "LElbow": 6,
-    "LWrist": 7,
-    "RHip": 8,
-    "RKnee": 9,
-    "RAnkle": 10,
-    "LHip": 11,
-    "LKnee": 12,
-    "LAnkle": 13,
-    "Chest": 14,
-    "Background": 15,
-}
+from src.FUNCTION.pose_estimation.yolov7.utils.datasets import letterbox
+from src.FUNCTION.pose_estimation.yolov7.utils.general import non_max_suppression_kpt
+from src.FUNCTION.pose_estimation.yolov7.utils.plots import output_to_keypoint, plot_skeleton_kpts
 
-POSE_PAIRS = [
-    ["Head", "Neck"],
-    ["Neck", "RShoulder"],
-    ["RShoulder", "RElbow"],
-    ["RElbow", "RWrist"],
-    ["Neck", "LShoulder"],
-    ["LShoulder", "LElbow"],
-    ["LElbow", "LWrist"],
-    ["Neck", "Chest"],
-    ["Chest", "RHip"],
-    ["RHip", "RKnee"],
-    ["RKnee", "RAnkle"],
-    ["Chest", "LHip"],
-    ["LHip", "LKnee"],
-    ["LKnee", "LAnkle"],
-]
+import cv2
+import numpy as np
 
 
 class POSE_ESTIMATOR:
     def __init__(self):
         super(POSE_ESTIMATOR, self).__init__()
 
-        protoFile = global_path.get_proj_abs_path("assets/models/pose_deploy_linevec.prototxt")
-        weightsFile = global_path.get_proj_abs_path("assets/models/pose_iter_440000.caffemodel")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.model = torch.load(global_path.get_proj_abs_path("assets/models/yolov7-w6-pose.pt"), map_location=self.device)['model']
 
-        self.NET = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
-        print("POSE_ESTIMATION - LOADED")
+        self.model.float().eval()
 
-    def get_pose(self, img_path):
-        img = cv2.imread(img_path)
-        imageHeight, imageWidth, _ = img.shape
+        if torch.cuda.is_available():
+            self.model.half().to(self.device)
 
-        imgBlob = cv2.dnn.blobFromImage(
-            img, 1.0 / 255, (imageWidth, imageHeight), (0, 0, 0), swapRB=False, crop=False
-        )
+        print(f"device: {self.device}, model loaded")
 
-        self.NET.setInput(imgBlob)
+    def run_inference(self, image):
+        image = letterbox(image, 960, stride=64, auto=True)[0]
+        image = transforms.ToTensor()(image)
 
-        output = self.NET.forward()
+        if torch.cuda.is_available():
+            image = image.half().to(self.device)
 
-        H = output.shape[2]
-        W = output.shape[3]
+        image = image.unsqueeze(0)
+
+        with torch.no_grad():
+            output, _ = self.model(image)
+
+        return output, image
+
+    def draw_keypoints(self, output, image):
+        output = non_max_suppression_kpt(output,
+                                         0.25,  # Confidence Threshold
+                                         0.65,  # IoU Threshold
+                                         nc=self.model.yaml['nc'],  # Number of Classes
+                                         nkpt=self.model.yaml['nkpt'],  # Number of Keypoints
+                                         kpt_label=True)
+        with torch.no_grad():
+            output = output_to_keypoint(output)
+        nimg = image[0].permute(1, 2, 0) * 255
+        nimg = nimg.cpu().numpy().astype(np.uint8)
+        nimg = cv2.cvtColor(nimg, cv2.COLOR_RGB2BGR)
+        for idx in range(output.shape[0]):
+            plot_skeleton_kpts(nimg, output[idx, 7:].T, 3)
+
+        return nimg
+
+    def pose_estimation_video(self, filename):
+        cap = cv2.VideoCapture(filename)
+        # VideoWriter for saving the video
+        fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+        out = cv2.VideoWriter('ice_skating_output.mp4', fourcc, 30.0, (int(cap.get(3)), int(cap.get(4))))
+        while cap.isOpened():
+            (ret, frame) = cap.read()
+            if ret == True:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                output, frame = self.run_inference(frame)
+                frame = self.draw_keypoints(output, frame)
+                frame = cv2.resize(frame, (int(cap.get(3)), int(cap.get(4))))
+                out.write(frame)
+                cv2.imshow('Pose estimation', frame)
+            else:
+                break
+
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
 
 
 

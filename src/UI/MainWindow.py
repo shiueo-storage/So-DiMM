@@ -29,13 +29,14 @@ class sodimm_UI_MainWindow(QMainWindow):
         window.setup(w=self)
 
         self.estimator = pose_estimation.POSE_ESTIMATOR()
+        
 
         self.GRID = QGridLayout(widget)
         self.setCentralWidget(widget)
 
         self.FOOTER_BOX = QHBoxLayout()
         self.FOOTER_LABEL = QLabel(
-            f"Copyright (c) 2023- shiüo :: So-DiMM v{self.config['version']}"
+            f"Copyright (c) 2023- shiüo & ileeric :: So-DiMM v{self.config['version']}"
         )
 
         self.initUI()
