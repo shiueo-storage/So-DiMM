@@ -68,7 +68,7 @@ class Pose_Estimator:
         print(frame_num, fps)
 
         out = cv2.VideoWriter(
-            "./test/test_video.mp4",
+            global_path.get_proj_abs_path("test/test_out.mp4"),
             fourcc,
             fps,
             (LOW_RES_WH, LOW_RES_WH),
@@ -92,7 +92,7 @@ class Pose_Estimator:
         out.release()
         cv2.destroyAllWindows()
 
-        deface.video_deface("./test/test_video.mp4")
+        deface.video_deface(global_path.get_proj_abs_path("test/test_video.mp4"))
         print("defacing end")
 
         print("done")
