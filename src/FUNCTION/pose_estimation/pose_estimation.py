@@ -6,7 +6,7 @@ from PIL import Image
 from src.FUNCTION.deface import deface
 from utils import global_path
 
-LOW_RES_WH = 128
+LOW_RES_WH = 256
 
 
 class Pose_Estimator:
@@ -68,7 +68,7 @@ class Pose_Estimator:
         print(frame_num, fps)
 
         out = cv2.VideoWriter(
-            global_path.get_proj_abs_path("assets/test/test_out.mp4"),
+            "./test/test_video.mp4",
             fourcc,
             fps,
             (LOW_RES_WH, LOW_RES_WH),
@@ -92,7 +92,7 @@ class Pose_Estimator:
         out.release()
         cv2.destroyAllWindows()
 
-        deface.video_deface(global_path.get_proj_abs_path("assets/test/test_video.mp4"))
+        deface.video_deface("./test/test_video.mp4")
         print("defacing end")
 
         print("done")
@@ -100,7 +100,12 @@ class Pose_Estimator:
     def image_estimate(self, image):
         image = cv2.resize(image, (LOW_RES_WH, LOW_RES_WH))
         image_Blob = cv2.dnn.blobFromImage(
-            image, 1.0 / 255, (LOW_RES_WH, LOW_RES_WH), (0, 0, 0), swapRB=False, crop=False
+            image,
+            1.0 / 255,
+            (LOW_RES_WH, LOW_RES_WH),
+            (0, 0, 0),
+            swapRB=False,
+            crop=False,
         )
         self.net.setInput(image_Blob)
         output = self.net.forward()

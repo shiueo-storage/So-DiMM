@@ -14,28 +14,29 @@ def ensure_rgb(img: np.ndarray) -> np.ndarray:
 
 
 class CenterFace:
-    def __init__(self, onnx_path=None, in_shape=None, backend='auto'):
+    def __init__(self, onnx_path=None, in_shape=None, backend="auto"):
         self.in_shape = in_shape
-        self.onnx_input_name = 'input.1'
-        self.onnx_output_names = ['537', '538', '539', '540']
+        self.onnx_input_name = "input.1"
+        self.onnx_output_names = ["537", "538", "539", "540"]
 
         if onnx_path is None:
             onnx_path = global_path.get_proj_abs_path("assets/models/centerface.onnx")
 
-        if backend == 'auto':
+        if backend == "auto":
             try:
                 import onnx
                 import onnxruntime
-                backend = 'onnxrt'
+
+                backend = "onnxrt"
             except:
                 # TODO: Warn when using a --verbose flag
                 # print('Failed to import onnx or onnxruntime. Falling back to slower OpenCV backend.')
-                backend = 'opencv'
+                backend = "opencv"
         self.backend = backend
 
-        if self.backend == 'opencv':
+        if self.backend == "opencv":
             self.net = cv2.dnn.readNetFromONNX(onnx_path)
-        elif self.backend == 'onnxrt':
+        elif self.backend == "onnxrt":
             import onnx
             import onnxruntime
 
@@ -44,11 +45,13 @@ class CenterFace:
 
             static_model = onnx.load(onnx_path)
             dyn_model = self.dynamicize_shapes(static_model)
-            self.sess = onnxruntime.InferenceSession(dyn_model.SerializeToString(),
-                                                     providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
+            self.sess = onnxruntime.InferenceSession(
+                dyn_model.SerializeToString(),
+                providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+            )
 
             preferred_provider = self.sess.get_providers()[0]
-            preferred_device = 'GPU' if preferred_provider.startswith('CUDA') else 'CPU'
+            preferred_device = "GPU" if preferred_provider.startswith("CUDA") else "CPU"
             # print(f'Running on {preferred_device}.')
 
     @staticmethod
@@ -62,15 +65,15 @@ class CenterFace:
         for node in static_model.graph.output:
             dims = [d.dim_value for d in node.type.tensor_type.shape.dim]
             output_dims[node.name] = dims
-        input_dims.update({
-            'input.1': ['B', 3, 'H', 'W']  # RGB input image
-        })
-        output_dims.update({
-            '537': ['B', 1, 'h', 'w'],  # heatmap
-            '538': ['B', 2, 'h', 'w'],  # scale
-            '539': ['B', 2, 'h', 'w'],  # offset
-            '540': ['B', 10, 'h', 'w']  # landmarks
-        })
+        input_dims.update({"input.1": ["B", 3, "H", "W"]})  # RGB input image
+        output_dims.update(
+            {
+                "537": ["B", 1, "h", "w"],  # heatmap
+                "538": ["B", 2, "h", "w"],  # scale
+                "539": ["B", 2, "h", "w"],  # offset
+                "540": ["B", 10, "h", "w"],  # landmarks
+            }
+        )
         dyn_model = update_inputs_outputs_dims(static_model, input_dims, output_dims)
         return dyn_model
 
@@ -79,24 +82,40 @@ class CenterFace:
         self.orig_shape = img.shape[:2]
         if self.in_shape is None:
             self.in_shape = self.orig_shape[::-1]
-        if not hasattr(self, 'h_new'):  # First call, need to compute sizes
-            self.w_new, self.h_new, self.scale_w, self.scale_h = self.transform(self.in_shape)
+        if not hasattr(self, "h_new"):  # First call, need to compute sizes
+            self.w_new, self.h_new, self.scale_w, self.scale_h = self.transform(
+                self.in_shape
+            )
 
         blob = cv2.dnn.blobFromImage(
-            img, scalefactor=1.0, size=(self.w_new, self.h_new),
-            mean=(0, 0, 0), swapRB=False, crop=False
+            img,
+            scalefactor=1.0,
+            size=(self.w_new, self.h_new),
+            mean=(0, 0, 0),
+            swapRB=False,
+            crop=False,
         )
-        if self.backend == 'opencv':
+        if self.backend == "opencv":
             self.net.setInput(blob)
             heatmap, scale, offset, lms = self.net.forward(self.onnx_output_names)
-        elif self.backend == 'onnxrt':
-            heatmap, scale, offset, lms = self.sess.run(self.onnx_output_names, {self.onnx_input_name: blob})
+        elif self.backend == "onnxrt":
+            heatmap, scale, offset, lms = self.sess.run(
+                self.onnx_output_names, {self.onnx_input_name: blob}
+            )
         else:
-            raise RuntimeError(f'Unknown backend {self.backend}')
-        dets, lms = self.decode(heatmap, scale, offset, lms, (self.h_new, self.w_new), threshold=threshold)
+            raise RuntimeError(f"Unknown backend {self.backend}")
+        dets, lms = self.decode(
+            heatmap, scale, offset, lms, (self.h_new, self.w_new), threshold=threshold
+        )
         if len(dets) > 0:
-            dets[:, 0:4:2], dets[:, 1:4:2] = dets[:, 0:4:2] / self.scale_w, dets[:, 1:4:2] / self.scale_h
-            lms[:, 0:10:2], lms[:, 1:10:2] = lms[:, 0:10:2] / self.scale_w, lms[:, 1:10:2] / self.scale_h
+            dets[:, 0:4:2], dets[:, 1:4:2] = (
+                dets[:, 0:4:2] / self.scale_w,
+                dets[:, 1:4:2] / self.scale_h,
+            )
+            lms[:, 0:10:2], lms[:, 1:10:2] = (
+                lms[:, 0:10:2] / self.scale_w,
+                lms[:, 1:10:2] / self.scale_h,
+            )
         else:
             dets = np.empty(shape=[0, 5], dtype=np.float32)
             lms = np.empty(shape=[0, 10], dtype=np.float32)
@@ -119,10 +138,15 @@ class CenterFace:
         boxes, lms = [], []
         if len(c0) > 0:
             for i in range(len(c0)):
-                s0, s1 = np.exp(scale0[c0[i], c1[i]]) * 4, np.exp(scale1[c0[i], c1[i]]) * 4
+                s0, s1 = (
+                    np.exp(scale0[c0[i], c1[i]]) * 4,
+                    np.exp(scale1[c0[i], c1[i]]) * 4,
+                )
                 o0, o1 = offset0[c0[i], c1[i]], offset1[c0[i], c1[i]]
                 s = heatmap[c0[i], c1[i]]
-                x1, y1 = max(0, (c1[i] + o1 + 0.5) * 4 - s1 / 2), max(0, (c0[i] + o0 + 0.5) * 4 - s0 / 2)
+                x1, y1 = max(0, (c1[i] + o1 + 0.5) * 4 - s1 / 2), max(
+                    0, (c0[i] + o0 + 0.5) * 4 - s0 / 2
+                )
                 x1, y1 = min(x1, size[1]), min(y1, size[0])
                 boxes.append([x1, y1, min(x1 + s1, size[1]), min(y1 + s0, size[0]), s])
                 lm = []
