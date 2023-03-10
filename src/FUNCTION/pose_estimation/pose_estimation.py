@@ -1,7 +1,4 @@
-import subprocess
-
 import cv2
-from PIL import Image
 
 from src.FUNCTION.deface import deface
 from utils import global_path

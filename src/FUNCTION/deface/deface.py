@@ -1,5 +1,3 @@
-import argparse
-import json
 import mimetypes
 import os
 from typing import Dict, Tuple
