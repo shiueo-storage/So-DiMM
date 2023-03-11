@@ -10,7 +10,6 @@ from PySide6.QtGui import QPixmap, Qt, QFont
 
 from src.FUNCTION.pose_estimation.pose_src import util
 from src.FUNCTION.pose_estimation.pose_src.body import Body
-from src.FUNCTION.pose_estimation.pose_src.hand import Hand
 from utils import global_path
 from src.UI.ui_utils import font
 from src.UI.window import window
@@ -23,7 +22,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-global ret, cv_img, CAM_WIDTH, CAM_HEIGHT, body_estimation, hand_estimation
+global ret, cv_img, CAM_WIDTH, CAM_HEIGHT, body_estimation
 ret = None
 cv_img = None
 
@@ -44,28 +43,12 @@ class POSED_CAM_THREAD(QThread):
     update_posed_CAM = Signal(np.ndarray)
 
     def run(self):
-        global ret, cv_img, body_estimation, hand_estimation
+        global ret, cv_img, body_estimation
         while 1:
             if ret:
                 candidate, subset = body_estimation(cv_img)
                 canvas = copy.deepcopy(cv_img)
                 canvas = util.draw_bodypose(canvas, candidate, subset)
-
-                # detect hand
-                hands_list = util.handDetect(candidate, subset, cv_img)
-
-                all_hand_peaks = []
-                for x, y, w, is_left in hands_list:
-                    peaks = hand_estimation(cv_img[y : y + w, x : x + w, :])
-                    peaks[:, 0] = np.where(
-                        peaks[:, 0] == 0, peaks[:, 0], peaks[:, 0] + x
-                    )
-                    peaks[:, 1] = np.where(
-                        peaks[:, 1] == 0, peaks[:, 1], peaks[:, 1] + y
-                    )
-                    all_hand_peaks.append(peaks)
-
-                canvas = util.draw_handpose(canvas, all_hand_peaks)
 
                 rgb_image = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
                 h, w, ch = rgb_image.shape
@@ -85,7 +68,7 @@ class POSED_CAM_THREAD(QThread):
 
 class sodimm_UI_MainWindow(QMainWindow):
     def __init__(self):
-        global CAM_WIDTH, CAM_HEIGHT, body_estimation, hand_estimation
+        global CAM_WIDTH, CAM_HEIGHT, body_estimation
         super(sodimm_UI_MainWindow, self).__init__()
         font.load_font(w=self)
         with open(global_path.get_proj_abs_path("config/config.json"), "r") as j:
@@ -94,10 +77,6 @@ class sodimm_UI_MainWindow(QMainWindow):
         print(f"Torch device: {torch.cuda.get_device_name()}")
         body_estimation = Body(
             global_path.get_proj_abs_path("assets/models/body_pose_model.pth")
-        )
-
-        hand_estimation = Hand(
-            global_path.get_proj_abs_path("assets/models/hand_pose_model.pth")
         )
 
         self.widget = QWidget()
