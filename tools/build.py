@@ -15,6 +15,7 @@ def build(
     icon,
     plugin_dict,
     include_package_dict,
+    onefile,
 ):
     try:
         clear.code_format_and_make_requirements_txt(path=os.path.dirname(path))
@@ -29,10 +30,13 @@ def build(
                 should_include.append(os.path.join(os.path.dirname(path), file_dict[i]))
 
         command = (
-            f"python -m nuitka --clang --show-modules --follow-imports "
+            f"python -m nuitka --clang --show-modules --show-memory --show-progress --follow-imports "
             f"--windows-company-name={companyname} --windows-product-version={product_version} "
-            f"--output-dir={Output_dir_name} --verbose --assume-yes-for-downloads --onefile "
+            f"--output-dir={Output_dir_name} --verbose --assume-yes-for-downloads "
         )
+        if onefile:
+            command = command + "--onefile "
+
         for i in range(0, len(should_include)):
             command += f"--include-data-dir={should_include[i]}={file_dict[i]} "
         for i in range(0, len(plugin_dict)):
