@@ -9,12 +9,16 @@ from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.body import Bo
 from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.hand import Hand
 from utils import global_path
 
+'''
 body_estimation = Body(
     global_path.get_proj_abs_path("assets/models/body_pose_model.pth")
-)
+)'''
+body_estimation = Body("D:\Github/So-DiMM/assets/models/body_pose_model.pth")
+'''
 hand_estimation = Hand(
     global_path.get_proj_abs_path("assets/models/hand_pose_model.pth")
-)
+)'''
+hand_estimation = Hand("D:\Github/So-DiMM/assets/models/hand_pose_model.pth")
 
 test_image = "images/demo.jpg"
 oriImg = cv2.imread(test_image)  # B,G,R order
