@@ -1,5 +1,6 @@
 SoDiMM_build/
 test/
+assets/models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

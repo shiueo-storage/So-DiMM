@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
+from utils import global_path
+
 
 class FFProbeResult(NamedTuple):
     return_code: int
@@ -22,16 +24,25 @@ class FFProbeResult(NamedTuple):
 
 
 def ffprobe(file_path) -> FFProbeResult:
-    command_array = ["ffprobe",
-                     "-v", "quiet",
-                     "-print_format", "json",
-                     "-show_format",
-                     "-show_streams",
-                     file_path]
-    result = subprocess.run(command_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    return FFProbeResult(return_code=result.returncode,
-                         json=result.stdout,
-                         error=result.stderr)
+    command_array = [
+        "ffprobe",
+        "-v",
+        "quiet",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
+        file_path,
+    ]
+    result = subprocess.run(
+        command_array,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+    )
+    return FFProbeResult(
+        return_code=result.returncode, json=result.stdout, error=result.stderr
+    )
 
 
 # openpose setup
@@ -40,8 +51,12 @@ from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import util
 from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.body import Body
 from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.hand import Hand
 
-body_estimation = Body('model/body_pose_model.pth')
-hand_estimation = Hand('model/hand_pose_model.pth')
+body_estimation = Body(
+    global_path.get_proj_abs_path("assets/models/body_pose_model.pth")
+)
+hand_estimation = Hand(
+    global_path.get_proj_abs_path("assets/models/hand_pose_model.pth")
+)
 
 
 def process_frame(frame, body=True, hands=True):
@@ -53,7 +68,7 @@ def process_frame(frame, body=True, hands=True):
         hands_list = util.handDetect(candidate, subset, frame)
         all_hand_peaks = []
         for x, y, w, is_left in hands_list:
-            peaks = hand_estimation(frame[y:y + w, x:x + w, :])
+            peaks = hand_estimation(frame[y : y + w, x : x + w, :])
             peaks[:, 0] = np.where(peaks[:, 0] == 0, peaks[:, 0], peaks[:, 0] + x)
             peaks[:, 1] = np.where(peaks[:, 1] == 0, peaks[:, 1], peaks[:, 1] + y)
             all_hand_peaks.append(peaks)
@@ -67,10 +82,11 @@ import ffmpeg
 
 # open specified video
 parser = argparse.ArgumentParser(
-    description="Process a video annotating poses detected.")
-parser.add_argument('file', type=str, help='Video file location to process.')
-parser.add_argument('--no_hands', action='store_true', help='No hand pose')
-parser.add_argument('--no_body', action='store_true', help='No body pose')
+    description="Process a video annotating poses detected."
+)
+parser.add_argument("file", type=str, help="Video file location to process.")
+parser.add_argument("--no_hands", action="store_true", help="No hand pose")
+parser.add_argument("--no_body", action="store_true", help="No body pose")
 args = parser.parse_args()
 video_file = args.file
 cap = cv2.VideoCapture(video_file)
@@ -89,18 +105,20 @@ postfix = info["format"]["format_name"].split(",")[0]
 output_file = ".".join(video_file.split(".")[:-1]) + ".processed." + postfix
 
 
-class Writer():
-    def __init__(self, output_file, input_fps, input_framesize, input_pix_fmt,
-                 input_vcodec):
+class Writer:
+    def __init__(
+        self, output_file, input_fps, input_framesize, input_pix_fmt, input_vcodec
+    ):
         if os.path.exists(output_file):
             os.remove(output_file)
         self.ff_proc = (
-            ffmpeg
-            .input('pipe:',
-                   format='rawvideo',
-                   pix_fmt="bgr24",
-                   s='%sx%s' % (input_framesize[1], input_framesize[0]),
-                   r=input_fps)
+            ffmpeg.input(
+                "pipe:",
+                format="rawvideo",
+                pix_fmt="bgr24",
+                s="%sx%s" % (input_framesize[1], input_framesize[0]),
+                r=input_fps,
+            )
             .output(output_file, pix_fmt=input_pix_fmt, vcodec=input_vcodec)
             .overwrite_output()
             .run_async(pipe_stdin=True)
@@ -115,25 +133,25 @@ class Writer():
 
 
 writer = None
-while (cap.isOpened()):
+while cap.isOpened():
     ret, frame = cap.read()
     if frame is None:
         break
 
-    posed_frame = process_frame(frame, body=not args.no_body,
-                                hands=not args.no_hands)
+    posed_frame = process_frame(frame, body=not args.no_body, hands=not args.no_hands)
 
     if writer is None:
         input_framesize = posed_frame.shape[:2]
-        writer = Writer(output_file, input_fps, input_framesize, input_pix_fmt,
-                        input_vcodec)
+        writer = Writer(
+            output_file, input_fps, input_framesize, input_pix_fmt, input_vcodec
+        )
 
-    cv2.imshow('frame', posed_frame)
+    cv2.imshow("frame", posed_frame)
 
     # write the frame
     writer(posed_frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 cap.release()

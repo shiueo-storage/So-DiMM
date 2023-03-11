@@ -7,11 +7,16 @@ from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import model
 from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import util
 from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.body import Body
 from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.hand import Hand
+from utils import global_path
 
-body_estimation = Body('model/body_pose_model.pth')
-hand_estimation = Hand('model/hand_pose_model.pth')
+body_estimation = Body(
+    global_path.get_proj_abs_path("assets/models/body_pose_model.pth")
+)
+hand_estimation = Hand(
+    global_path.get_proj_abs_path("assets/models/hand_pose_model.pth")
+)
 
-test_image = 'images/demo.jpg'
+test_image = "images/demo.jpg"
 oriImg = cv2.imread(test_image)  # B,G,R order
 candidate, subset = body_estimation(oriImg)
 canvas = copy.deepcopy(oriImg)
@@ -27,7 +32,7 @@ for x, y, w, is_left in hands_list:
     # if is_left:
     # plt.imshow(oriImg[y:y+w, x:x+w, :][:, :, [2, 1, 0]])
     # plt.show()
-    peaks = hand_estimation(oriImg[y:y + w, x:x + w, :])
+    peaks = hand_estimation(oriImg[y : y + w, x : x + w, :])
     peaks[:, 0] = np.where(peaks[:, 0] == 0, peaks[:, 0], peaks[:, 0] + x)
     peaks[:, 1] = np.where(peaks[:, 1] == 0, peaks[:, 1], peaks[:, 1] + y)
     # else:
@@ -40,5 +45,5 @@ for x, y, w, is_left in hands_list:
 canvas = util.draw_handpose(canvas, all_hand_peaks)
 
 plt.imshow(canvas[:, :, [2, 1, 0]])
-plt.axis('off')
+plt.axis("off")
 plt.show()
