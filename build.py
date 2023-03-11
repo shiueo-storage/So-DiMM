@@ -42,5 +42,4 @@ build.build(
     icon=global_path.get_proj_abs_path("assets/sodimm_icon.png"),
     plugin_dict=["pyside6"],
     include_package_dict=[],
-    onefile=False,
 )

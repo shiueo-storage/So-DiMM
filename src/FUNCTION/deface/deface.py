@@ -3,7 +3,7 @@ import os
 from typing import Dict, Tuple
 
 import tqdm
-import skimage.draw
+from skimage import draw as sk_draw
 import numpy as np
 import imageio
 import imageio.plugins.ffmpeg
@@ -46,7 +46,7 @@ def draw_det(
         if ellipse:
             roibox = frame[y1:y2, x1:x2]
             # Get y and x coordinate lists of the "bounding ellipse"
-            ey, ex = skimage.draw.ellipse(
+            ey, ex = sk_draw.ellipse(
                 (y2 - y1) // 2, (x2 - x1) // 2, (y2 - y1) // 2, (x2 - x1) // 2
             )
             roibox[ey, ex] = blurred_box[ey, ex]
