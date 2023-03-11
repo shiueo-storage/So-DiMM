@@ -7,15 +7,15 @@ from src.FUNCTION.pose_estimation.pose_src import util
 from src.FUNCTION.pose_estimation.pose_src.body import Body
 from src.FUNCTION.pose_estimation.pose_src.hand import Hand
 
-'''
+"""
 body_estimation = Body(
     global_path.get_proj_abs_path("assets/models/body_pose_model.pth")
-)'''
+)"""
 body_estimation = Body("D:\Github/So-DiMM/assets/models/body_pose_model.pth")
-'''
+"""
 hand_estimation = Hand(
     global_path.get_proj_abs_path("assets/models/hand_pose_model.pth")
-)'''
+)"""
 hand_estimation = Hand("D:\Github/So-DiMM/assets/models/hand_pose_model.pth")
 
 test_image = "images/demo.jpg"

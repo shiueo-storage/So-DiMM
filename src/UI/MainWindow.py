@@ -19,7 +19,8 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QMainWindow, QVBoxLayout,
+    QMainWindow,
+    QVBoxLayout,
 )
 
 global ret, cv_img, CAM_WIDTH, CAM_HEIGHT, body_estimation, hand_estimation
@@ -55,9 +56,13 @@ class POSED_CAM_THREAD(QThread):
 
                 all_hand_peaks = []
                 for x, y, w, is_left in hands_list:
-                    peaks = hand_estimation(cv_img[y: y + w, x: x + w, :])
-                    peaks[:, 0] = np.where(peaks[:, 0] == 0, peaks[:, 0], peaks[:, 0] + x)
-                    peaks[:, 1] = np.where(peaks[:, 1] == 0, peaks[:, 1], peaks[:, 1] + y)
+                    peaks = hand_estimation(cv_img[y : y + w, x : x + w, :])
+                    peaks[:, 0] = np.where(
+                        peaks[:, 0] == 0, peaks[:, 0], peaks[:, 0] + x
+                    )
+                    peaks[:, 1] = np.where(
+                        peaks[:, 1] == 0, peaks[:, 1], peaks[:, 1] + y
+                    )
                     all_hand_peaks.append(peaks)
 
                 canvas = util.draw_handpose(canvas, all_hand_peaks)
@@ -65,8 +70,12 @@ class POSED_CAM_THREAD(QThread):
                 rgb_image = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
                 h, w, ch = rgb_image.shape
                 bytes_per_line = ch * w
-                convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-                p = convert_to_Qt_format.scaled(CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio)
+                convert_to_Qt_format = QtGui.QImage(
+                    rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888
+                )
+                p = convert_to_Qt_format.scaled(
+                    CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio
+                )
                 p = QPixmap.fromImage(p)
 
                 self.update_posed_CAM.emit(p)
@@ -144,7 +153,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -178,6 +187,8 @@ class sodimm_UI_MainWindow(QMainWindow):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
-        convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+        convert_to_Qt_format = QtGui.QImage(
+            rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888
+        )
         p = convert_to_Qt_format.scaled(CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
