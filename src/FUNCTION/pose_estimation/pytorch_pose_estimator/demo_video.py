@@ -1,17 +1,13 @@
 import copy
 import numpy as np
 import cv2
-from glob import glob
 import os
-import argparse
 import json
 
 # video file processing setup
 # from: https://stackoverflow.com/a/61927951
 import argparse
 import subprocess
-import sys
-from pathlib import Path
 from typing import NamedTuple
 
 from utils import global_path
@@ -46,10 +42,9 @@ def ffprobe(file_path) -> FFProbeResult:
 
 
 # openpose setup
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import model
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import util
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.body import Body
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.hand import Hand
+from src.FUNCTION.pose_estimation.pose_src import util
+from src.FUNCTION.pose_estimation.pose_src.body import Body
+from src.FUNCTION.pose_estimation.pose_src.hand import Hand
 
 body_estimation = Body(
     global_path.get_proj_abs_path("assets/models/body_pose_model.pth")

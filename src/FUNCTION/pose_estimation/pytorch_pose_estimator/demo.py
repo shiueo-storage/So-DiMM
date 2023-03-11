@@ -3,11 +3,9 @@ import matplotlib.pyplot as plt
 import copy
 import numpy as np
 
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import model
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import util
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.body import Body
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.hand import Hand
-from utils import global_path
+from src.FUNCTION.pose_estimation.pose_src import util
+from src.FUNCTION.pose_estimation.pose_src.body import Body
+from src.FUNCTION.pose_estimation.pose_src.hand import Hand
 
 '''
 body_estimation = Body(

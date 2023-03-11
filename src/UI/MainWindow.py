@@ -1,6 +1,5 @@
 import copy
 import json
-import time
 
 import cv2
 import numpy as np
@@ -9,10 +8,9 @@ from PySide6 import QtGui
 from PySide6.QtCore import QThread, Slot, Signal, QTimer
 from PySide6.QtGui import QPixmap, Qt, QFont
 
-from src.FUNCTION.pose_estimation import pose_estimation
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src import util
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.body import Body
-from src.FUNCTION.pose_estimation.pytorch_pose_estimator.pose_src.hand import Hand
+from src.FUNCTION.pose_estimation.pose_src import util
+from src.FUNCTION.pose_estimation.pose_src.body import Body
+from src.FUNCTION.pose_estimation.pose_src.hand import Hand
 from utils import global_path
 from src.UI.ui_utils import font
 from src.UI.window import window
@@ -21,8 +19,6 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QPushButton,
     QMainWindow, QVBoxLayout,
 )
 
@@ -149,7 +145,6 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.CAM_V_BOX.addWidget(self.CAM_W_TEXT)
         self.CAM_V_BOX.addWidget(self.CAM_LABEL)
         self.CAM_V_BOX.addWidget(self.POSED_CAM_BOX)
-
 
         self.FOOTER_BOX.addWidget(self.FOOTER_LABEL)
 
