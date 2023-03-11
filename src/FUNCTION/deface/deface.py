@@ -11,10 +11,6 @@ import cv2
 
 from src.FUNCTION.deface.centerface import CenterFace
 
-
-# TODO: Optionally preserve audio track?
-
-
 def scale_bb(x1, y1, x2, y2, mask_scale=1.0):
     s = mask_scale - 1.0
     h, w = y2 - y1, x2 - x1

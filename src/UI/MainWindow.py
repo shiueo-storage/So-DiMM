@@ -1,11 +1,7 @@
 import json
-import webbrowser
-
-from PySide6.QtCore import QTimer
 
 from src.FUNCTION.pose_estimation import pose_estimation
 from utils import global_path
-from src.UI.menubar import menubar
 from src.UI.window import window
 from PySide6.QtWidgets import (
     QWidget,
@@ -25,13 +21,15 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.config = json.load(j)
 
         widget = QWidget()
-        menubar.setup(w=self)
         window.setup(w=self)
 
+        """
         self.estimator = pose_estimation.Pose_Estimator(need_test=True)
         self.estimator.video_estimate(
             global_path.get_proj_abs_path("test/test_video.mp4")
         )
+        """
+
         self.GRID = QGridLayout(widget)
         self.setCentralWidget(widget)
 
@@ -44,7 +42,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
