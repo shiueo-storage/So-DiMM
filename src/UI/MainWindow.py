@@ -101,6 +101,9 @@ class sodimm_UI_MainWindow(QMainWindow):
         )
         """
 
+        self.ERROR_PNG = QPixmap()
+        self.ERROR_PNG.load(global_path.get_proj_abs_path("assets/error.png"))
+
         self.GRID = QGridLayout(self.widget)
         self.setCentralWidget(self.widget)
 
@@ -112,6 +115,8 @@ class sodimm_UI_MainWindow(QMainWindow):
         CAM_HEIGHT = 512
         self.CAM_LABEL.resize(CAM_WIDTH, CAM_HEIGHT)
 
+        self.CAM_LABEL.setPixmap(self.ERROR_PNG)
+
         self.CAM_V_BOX = QVBoxLayout()
 
         self.VIDEO_THREAD = VIDEOTHREAD()
@@ -119,6 +124,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.VIDEO_THREAD.start()
 
         self.POSED_CAM_BOX = QLabel()
+        self.POSED_CAM_BOX.setPixmap(self.ERROR_PNG)
 
         self.POSED_VIDEO_THREAD = POSED_CAM_THREAD()
         self.POSED_VIDEO_THREAD.update_posed_CAM.connect(self.update_posed_CAM)
