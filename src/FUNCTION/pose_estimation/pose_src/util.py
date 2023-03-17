@@ -93,7 +93,7 @@ def draw_bodypose(canvas, candidate, subset):
             if index == -1:
                 continue
             x, y = candidate[index][0:2]
-            print(int(x), int(y))
+            # print(int(x), int(y)) # print each coordinates
             cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
 
     for i in range(17):

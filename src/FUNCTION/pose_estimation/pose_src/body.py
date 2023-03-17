@@ -46,11 +46,11 @@ class Body(object):
                 imageToTest, stride, padValue
             )
             im = (
-                np.transpose(
-                    np.float32(imageToTest_padded[:, :, :, np.newaxis]), (3, 2, 0, 1)
-                )
-                / 256
-                - 0.5
+                    np.transpose(
+                        np.float32(imageToTest_padded[:, :, :, np.newaxis]), (3, 2, 0, 1)
+                    )
+                    / 256
+                    - 0.5
             )
             im = np.ascontiguousarray(im)
 
@@ -78,10 +78,10 @@ class Body(object):
                 heatmap, (0, 0), fx=stride, fy=stride, interpolation=cv2.INTER_CUBIC
             )
             heatmap = heatmap[
-                : imageToTest_padded.shape[0] - pad[2],
-                : imageToTest_padded.shape[1] - pad[3],
-                :,
-            ]
+                      : imageToTest_padded.shape[0] - pad[2],
+                      : imageToTest_padded.shape[1] - pad[3],
+                      :,
+                      ]
             heatmap = cv2.resize(
                 heatmap,
                 (oriImg.shape[1], oriImg.shape[0]),
@@ -96,10 +96,10 @@ class Body(object):
                 paf, (0, 0), fx=stride, fy=stride, interpolation=cv2.INTER_CUBIC
             )
             paf = paf[
-                : imageToTest_padded.shape[0] - pad[2],
-                : imageToTest_padded.shape[1] - pad[3],
-                :,
-            ]
+                  : imageToTest_padded.shape[0] - pad[2],
+                  : imageToTest_padded.shape[1] - pad[3],
+                  :,
+                  ]
             paf = cv2.resize(
                 paf, (oriImg.shape[1], oriImg.shape[0]), interpolation=cv2.INTER_CUBIC
             )
@@ -291,8 +291,8 @@ class Body(object):
                     subset_idx = [-1, -1]
                     for j in range(len(subset)):  # 1:size(subset,1):
                         if (
-                            subset[j][indexA] == partAs[i]
-                            or subset[j][indexB] == partBs[i]
+                                subset[j][indexA] == partAs[i]
+                                or subset[j][indexB] == partBs[i]
                         ):
                             subset_idx[found] = j
                             found += 1
@@ -303,15 +303,15 @@ class Body(object):
                             subset[j][indexB] = partBs[i]
                             subset[j][-1] += 1
                             subset[j][-2] += (
-                                candidate[partBs[i].astype(int), 2]
-                                + connection_all[k][i][2]
+                                    candidate[partBs[i].astype(int), 2]
+                                    + connection_all[k][i][2]
                             )
                     elif found == 2:  # if found 2 and disjoint, merge them
                         j1, j2 = subset_idx
                         membership = (
-                            (subset[j1] >= 0).astype(int)
-                            + (subset[j2] >= 0).astype(int)
-                        )[:-2]
+                                             (subset[j1] >= 0).astype(int)
+                                             + (subset[j2] >= 0).astype(int)
+                                     )[:-2]
                         if len(np.nonzero(membership == 2)[0]) == 0:  # merge
                             subset[j1][:-2] += subset[j2][:-2] + 1
                             subset[j1][-2:] += subset[j2][-2:]
@@ -321,8 +321,8 @@ class Body(object):
                             subset[j1][indexB] = partBs[i]
                             subset[j1][-1] += 1
                             subset[j1][-2] += (
-                                candidate[partBs[i].astype(int), 2]
-                                + connection_all[k][i][2]
+                                    candidate[partBs[i].astype(int), 2]
+                                    + connection_all[k][i][2]
                             )
 
                     # if find no partA in the subset, create a new subset
@@ -332,8 +332,8 @@ class Body(object):
                         row[indexB] = partBs[i]
                         row[-1] = 2
                         row[-2] = (
-                            sum(candidate[connection_all[k][i, :2].astype(int), 2])
-                            + connection_all[k][i][2]
+                                sum(candidate[connection_all[k][i, :2].astype(int), 2])
+                                + connection_all[k][i][2]
                         )
                         subset = np.vstack([subset, row])
         # delete some rows of subset which has few parts occur
@@ -345,6 +345,7 @@ class Body(object):
 
         # subset: n*20 array, 0-17 is the index in candidate, 18 is the total score, 19 is the total parts
         # candidate: x, y, score, id
+
         return candidate, subset
 
 
