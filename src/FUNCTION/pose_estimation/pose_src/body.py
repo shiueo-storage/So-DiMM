@@ -17,6 +17,10 @@ class Body(object):
         if torch.cuda.is_available():
             self.model = self.model.cuda()
             print("Using CUDA")
+        elif torch.backends.mps.is_available():
+            device = torch.device("mps")
+        else:
+            device = torch.device("cpu")
         model_dict = util.transfer(self.model, torch.load(model_path))
         self.model.load_state_dict(model_dict)
         self.model.eval()
@@ -52,7 +56,13 @@ class Body(object):
 
             data = torch.from_numpy(im).float()
             if torch.cuda.is_available():
-                data = data.cuda()
+                device = torch.device("cuda")
+                print("Using CUDA")
+            elif torch.backends.mps.is_available():
+                device = torch.device("mps")
+            else:
+                device = torch.device("cpu")
+            data = data.to(device)
             # data = data.permute([2, 0, 1]).unsqueeze(0).float()
             with torch.no_grad():
                 Mconv7_stage6_L1, Mconv7_stage6_L2 = self.model(data)
