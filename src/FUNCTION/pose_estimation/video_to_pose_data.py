@@ -1,6 +1,8 @@
 import cv2
 import mediapipe as mp
 from openpyxl import Workbook
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -42,6 +44,18 @@ parts_list = [
     "right_foot_index",
 ]
 
+list0, list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14, list15, list16, list17, list18, list19, list20, \
+list21, list22, list23, list24, list25, list26, list27, list28, list29, list30, list31, list32 = \
+    [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[],
+                                                                                                                     [],
+                                                                                                                     []], [
+        [], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [
+        [], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [
+        [], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []]
+u_list = [list0, list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,
+          list15, list16, list17, list18, list19, list20, \
+          list21, list22, list23, list24, list25, list26, list27, list28, list29, list30, list31, list32]
+
 
 def convert(video_path, dev=False):
     exel_file = Workbook()
@@ -52,7 +66,7 @@ def convert(video_path, dev=False):
     c_cap = 2
     cap = cv2.VideoCapture(video_path)
     with mp_pose.Pose(
-        min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
     ) as pose:
         while cap.isOpened():
             success, image = cap.read()
@@ -73,8 +87,13 @@ def convert(video_path, dev=False):
                         f"{str(SODIMM_POINTS.landmark[i].x)},{str(SODIMM_POINTS.landmark[i].y)},{str(SODIMM_POINTS.landmark[i].z)},"
                         f"{str(SODIMM_POINTS.landmark[i].visibility)}",
                     )
-                    print(c_cap)
+                    u_list[i][0].append(SODIMM_POINTS.landmark[i].x)
+                    u_list[i][1].append(SODIMM_POINTS.landmark[i].y)
+                    u_list[i][2].append(SODIMM_POINTS.landmark[i].visibility)
+                print(c_cap)
+
             c_cap += 1
+
             if dev:
                 image.flags.writeable = True
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -89,4 +108,11 @@ def convert(video_path, dev=False):
                 if cv2.waitKey(5) & 0xFF == 27:
                     break
     cap.release()
+    fig = plt.figure(figsize=(9, 6))
+    ax = fig.add_subplot(111, projection='3d')
+    for i in range(len(u_list)):
+        ax.plot(u_list[i][0], u_list[i][1], u_list[i][2], label=parts_list[i])
+    ax.legend()
+    plt.show()
+
     exel_file.save("test.xlsx")
