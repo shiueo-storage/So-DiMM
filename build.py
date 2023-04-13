@@ -35,11 +35,11 @@ with open("config/config.json", "r") as j:
 
 build.build(
     withconsole=False,
-    path=os.path.abspath("Schtarn Launcher.py"),
+    path=os.path.abspath("SoDiMM.py"),
     file_dict=["assets", "config"],
-    companyname="schtarn",
+    companyname="shiüo+ileeric",
     product_version=config["version"],
-    icon=global_path.get_proj_abs_path("assets/sch_launcher_icon.png"),
+    icon=global_path.get_proj_abs_path("assets/sodimm_icon.png"),
     plugin_dict=["pyside6"],
     include_package_dict=[],
 )
