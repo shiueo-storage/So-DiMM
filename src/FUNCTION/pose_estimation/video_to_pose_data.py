@@ -44,17 +44,110 @@ parts_list = [
     "right_foot_index",
 ]
 
-list0, list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14, list15, list16, list17, list18, list19, list20, \
-list21, list22, list23, list24, list25, list26, list27, list28, list29, list30, list31, list32 = \
-    [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[],
-                                                                                                                     [],
-                                                                                                                     []], [
-        [], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [
-        [], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [
-        [], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []], [[], [], []]
-u_list = [list0, list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,
-          list15, list16, list17, list18, list19, list20, \
-          list21, list22, list23, list24, list25, list26, list27, list28, list29, list30, list31, list32]
+(
+    list0,
+    list1,
+    list2,
+    list3,
+    list4,
+    list5,
+    list6,
+    list7,
+    list8,
+    list9,
+    list10,
+    list11,
+    list12,
+    list13,
+    list14,
+    list15,
+    list16,
+    list17,
+    list18,
+    list19,
+    list20,
+    list21,
+    list22,
+    list23,
+    list24,
+    list25,
+    list26,
+    list27,
+    list28,
+    list29,
+    list30,
+    list31,
+    list32,
+) = (
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+    [[], [], []],
+)
+u_list = [
+    list0,
+    list1,
+    list2,
+    list3,
+    list4,
+    list5,
+    list6,
+    list7,
+    list8,
+    list9,
+    list10,
+    list11,
+    list12,
+    list13,
+    list14,
+    list15,
+    list16,
+    list17,
+    list18,
+    list19,
+    list20,
+    list21,
+    list22,
+    list23,
+    list24,
+    list25,
+    list26,
+    list27,
+    list28,
+    list29,
+    list30,
+    list31,
+    list32,
+]
 
 
 def convert(video_path, dev=False):
@@ -66,7 +159,7 @@ def convert(video_path, dev=False):
     c_cap = 2
     cap = cv2.VideoCapture(video_path)
     with mp_pose.Pose(
-            min_detection_confidence=0.5, min_tracking_confidence=0.5
+        min_detection_confidence=0.5, min_tracking_confidence=0.5
     ) as pose:
         while cap.isOpened():
             success, image = cap.read()
@@ -109,7 +202,7 @@ def convert(video_path, dev=False):
                     break
     cap.release()
     fig = plt.figure(figsize=(9, 6))
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
     for i in range(len(u_list)):
         ax.plot(u_list[i][0], u_list[i][1], u_list[i][2], label=parts_list[i])
     ax.legend()
