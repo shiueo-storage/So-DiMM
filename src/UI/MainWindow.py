@@ -6,6 +6,7 @@ import numpy as np
 from PySide6 import QtGui
 from PySide6.QtCore import QThread, Slot, Signal, QTimer
 from PySide6.QtGui import QPixmap, Qt, QFont
+import subprocess
 
 from utils import global_path
 from src.UI.ui_utils import font
@@ -16,9 +17,10 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
-    QVBoxLayout,
+    QVBoxLayout, QPushButton, QLineEdit, QComboBox,
 )
 import mediapipe as mp
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
@@ -41,8 +43,6 @@ class VIDEOTHREAD(QThread):
                     print("Ignoring empty camera frame.")
                     # If loading a video, use 'break' instead of 'continue'.
                     continue
-                else:
-                    self.change_pixmap_signal.emit(image)
 
                 image.flags.writeable = False
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -51,7 +51,6 @@ class VIDEOTHREAD(QThread):
                 print(LANDMARK)
 
                 # Draw the pose annotation on the image.
-                """
                 image.flags.writeable = True
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 mp_drawing.draw_landmarks(
@@ -59,7 +58,10 @@ class VIDEOTHREAD(QThread):
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
                     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+
+                self.change_pixmap_signal.emit(image)
                 # Flip the image horizontally for a selfie-view display.
+                """
                 cv2.imshow('MediaPipe Pose', cv2.flip(image, 1))
                 if cv2.waitKey(5) & 0xFF == 27:
                     break
@@ -100,6 +102,25 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.VIDEO_THREAD.change_pixmap_signal.connect(self.update_CAM)
         self.VIDEO_THREAD.start()
 
+        self.OPTION_BOX = QHBoxLayout()
+
+        self.OPTION_BOX_LINEEDIT = QLineEdit()
+        self.OPTION_BOX_LINEEDIT.setFont(QFont(self.Pretendard_SemiBold, 20))
+        self.OPTION_BOX_LINEEDIT.setPlaceholderText("Room ID")
+        self.OPTION_BOX_JOIN_BTN = QPushButton("Join")
+        self.OPTION_BOX_JOIN_BTN.setFont(QFont(self.Pretendard_SemiBold, 20))
+
+        self.OPTION_BOX_2 = QHBoxLayout()
+        self.OPTION_BOX_2_COMBO_BOX = QComboBox()
+        self.OPTION_BOX_2_COMBO_BOX.setFont(QFont(self.Pretendard_SemiBold, 15))
+        self.OPTION_BOX_2_COMBO_BOX.addItem("어쩔티비")
+        self.OPTION_BOX_2_COMBO_BOX.addItem("awodih")
+
+        self.OPTION_BOX_2_SELECT_BOX = QPushButton("Select")
+        self.OPTION_BOX_2_SELECT_BOX.setFont(QFont(self.Pretendard_SemiBold, 20))
+        self.OPTION_BOX_2_START_BUTTON = QPushButton("Start")
+        self.OPTION_BOX_2_START_BUTTON.setFont(QFont(self.Pretendard_SemiBold, 20))
+
         self.FOOTER_BOX = QHBoxLayout()
         self.FOOTER_LABEL = QLabel(
             f"Copyright (c) 2023- shiüo & ileeric :: So-DiMM v{self.config['version']}"
@@ -114,7 +135,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -123,13 +144,24 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.FOOTER_BOX.addWidget(self.FOOTER_LABEL)
 
+        self.OPTION_BOX.addWidget(self.OPTION_BOX_LINEEDIT)
+        self.OPTION_BOX.addWidget(self.OPTION_BOX_JOIN_BTN)
+
+        self.OPTION_BOX_2.addWidget(self.OPTION_BOX_2_COMBO_BOX)
+        self.OPTION_BOX_2.addWidget(self.OPTION_BOX_2_SELECT_BOX)
+        self.OPTION_BOX_2.addWidget(self.OPTION_BOX_2_START_BUTTON)
+
         self.GRID.addLayout(self.CAM_V_BOX, 1, 0, 1, 1)
-        self.GRID.addLayout(self.FOOTER_BOX, 3, 0, 1, 1)
+        self.GRID.addLayout(self.OPTION_BOX, 2, 0, 2, 1)
+        self.GRID.addLayout(self.OPTION_BOX_2, 3, 0, 2, 1)
+        self.GRID.addLayout(self.FOOTER_BOX, 4, 0, 1, 1)
 
     def updateUI(self):
         global CAM_WIDTH, CAM_HEIGHT
         CAM_WIDTH = self.widget.width() // 2
         CAM_HEIGHT = self.widget.height()
+        self.OPTION_BOX_LINEEDIT.setMaximumWidth(self.widget.width() // 2)
+        self.OPTION_BOX_2_COMBO_BOX.setMinimumWidth(self.widget.width() // 2)
 
     @Slot(np.ndarray)
     def update_CAM(self, cv_img):
