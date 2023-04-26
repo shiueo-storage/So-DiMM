@@ -17,7 +17,10 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
-    QVBoxLayout, QPushButton, QLineEdit, QComboBox,
+    QVBoxLayout,
+    QPushButton,
+    QLineEdit,
+    QComboBox,
 )
 import mediapipe as mp
 
@@ -35,8 +38,8 @@ class VIDEOTHREAD(QThread):
         global ret, cv_img
         cap = cv2.VideoCapture(0)
         with mp_pose.Pose(
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5) as pose:
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
+        ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
                 if not success:
@@ -57,7 +60,8 @@ class VIDEOTHREAD(QThread):
                     image,
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
-                    landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+                    landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+                )
 
                 self.change_pixmap_signal.emit(image)
                 # Flip the image horizontally for a selfie-view display.
@@ -107,7 +111,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.OPTION_BOX_LINEEDIT = QLineEdit()
         self.OPTION_BOX_LINEEDIT.setFont(QFont(self.Pretendard_SemiBold, 20))
         self.OPTION_BOX_LINEEDIT.setPlaceholderText("Room ID")
-        self.OPTION_BOX_JOIN_BTN = QPushButton("Join")
+        self.OPTION_BOX_JOIN_BTN = QPushButton("Upload")
         self.OPTION_BOX_JOIN_BTN.setFont(QFont(self.Pretendard_SemiBold, 20))
 
         self.OPTION_BOX_2 = QHBoxLayout()
@@ -135,7 +139,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
