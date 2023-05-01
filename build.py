@@ -36,7 +36,7 @@ with open("config/config.json", "r") as j:
 build.build(
     withconsole=False,
     path=os.path.abspath("SoDiMM.py"),
-    file_dict=["assets", "config"],
+    file_dict=["assets", "config", "videos"],
     companyname="shiüo+ileeric",
     product_version=config["version"],
     icon=global_path.get_proj_abs_path("assets/sodimm_icon.png"),
