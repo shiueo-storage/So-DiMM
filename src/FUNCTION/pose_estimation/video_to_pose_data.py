@@ -201,6 +201,7 @@ def convert(video_path, dev=False):
                 if cv2.waitKey(5) & 0xFF == 27:
                     break
     cap.release()
+    cv2.destroyAllWindows()
     fig = plt.figure(figsize=(9, 6))
     ax = fig.add_subplot(111, projection="3d")
     for i in range(len(u_list)):

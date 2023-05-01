@@ -13,6 +13,7 @@ from PySide6.QtCore import QThread, Slot, Signal, QTimer
 from PySide6.QtGui import QPixmap, Qt, QFont
 import subprocess
 
+from src.FUNCTION.pose_estimation import video_to_pose_data
 from utils import global_path
 from src.UI.ui_utils import font
 from src.UI.window import window
@@ -46,7 +47,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-                min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -88,13 +89,13 @@ class WEBCAP_GET(QThread):
         FPS = 30
         global CAM_IMAGE, WEBCAM, WEBCAM_ON
         while WEBCAM_ON:
-            print(CAM_IMAGE)
-            current_time = time.time()-prev_time
-            if current_time > 1./FPS:
+            print(LANDMARK)
+            current_time = time.time() - prev_time
+            if current_time > 1.0 / FPS:
                 prev_time = time.time()
                 WEBCAM.write(CAM_IMAGE)
         WEBCAM.release()
-        print('done')
+        print("done")
 
 
 class sodimm_UI_MainWindow(QMainWindow):
@@ -107,6 +108,7 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.config = json.load(j)
 
         self.DANCE_SELECTED = False
+        self.CURRENT_DANCE_VIDEO_PATH = None
 
         self.widget = QWidget()
         window.setup(w=self)
@@ -137,7 +139,9 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.OPTION_BOX_SELECT_BTN = QPushButton("Select")
         self.OPTION_BOX_SELECT_BTN.setFont(QFont(self.Pretendard_SemiBold, 20))
-        self.OPTION_BOX_SELECT_BTN.clicked.connect(lambda: self.DANCE_SELECT_BTN_CLICKED())
+        self.OPTION_BOX_SELECT_BTN.clicked.connect(
+            lambda: self.DANCE_SELECT_BTN_CLICKED()
+        )
 
         self.OPTION_BOX_SELECT_INDICATOR = QLabel("None")
         self.OPTION_BOX_SELECT_INDICATOR.setFont(QFont(self.Pretendard_SemiBold, 20))
@@ -182,7 +186,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -232,7 +236,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         return QPixmap.fromImage(p)
 
     def DANCE_SELECT_BTN_CLICKED(self):
-        print('selected')
+        print("selected")
         self.DANCE_SELECTED = True
 
     def RECORD_START(self):
@@ -241,11 +245,16 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.OPTION_BOX_2_RECORD_START.setEnabled(False)
             self.OPTION_BOX_2_RECORD_STOP.setEnabled(True)
 
-            file_name = hashlib.sha256((str(datetime.datetime.now()).replace(' ', '') + str(
-                random.randrange(0, 10000000))).encode()).hexdigest()
+            file_name = hashlib.sha256(
+                (
+                    str(datetime.datetime.now()).replace(" ", "")
+                    + str(random.randrange(0, 10000000))
+                ).encode()
+            ).hexdigest()
             file_path = global_path.get_proj_abs_path(f"videos/{file_name}.mp4")
+            self.CURRENT_DANCE_VIDEO_PATH = file_path
 
-            fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+            fourcc = cv2.VideoWriter_fourcc(*"MP4V")
             fps = 30
 
             size = (int(REAL_CAM_WIDTH), int(REAL_CAM_HEIGHT))
@@ -256,9 +265,8 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.CAM_RECORDING_OUT.start()
 
             self.OPTION_BOX_2_STATUS_LABEL.setText(
-                f"recording started\n{file_path[:len(file_path) // 2]}\n{file_path[len(file_path) // 2:]}")
-
-
+                f"recording started\n{file_path[:len(file_path) // 2]}\n{file_path[len(file_path) // 2:]}"
+            )
 
         else:
             self.OPTION_BOX_2_STATUS_LABEL.setText("Dance not selected")
@@ -270,5 +278,6 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.OPTION_BOX_2_STATUS_LABEL.setText("recording stopped")
             self.OPTION_BOX_2_RECORD_STOP.setEnabled(False)
             self.OPTION_BOX_2_RECORD_START.setEnabled(True)
+            video_to_pose_data.convert(self.CURRENT_DANCE_VIDEO_PATH, dev=True)
         else:
             self.OPTION_BOX_2_STATUS_LABEL.setText("Dance not selected")
