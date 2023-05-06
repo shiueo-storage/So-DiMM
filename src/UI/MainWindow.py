@@ -14,8 +14,7 @@ import numpy as np
 import requests
 from PySide6 import QtGui
 from PySide6.QtCore import QThread, Slot, Signal, QTimer
-from PySide6.QtGui import QPixmap, Qt, QFont, QImage
-import subprocess
+from PySide6.QtGui import QPixmap, Qt, QFont
 
 from src.FUNCTION.pose_estimation import video_to_pose_data
 from utils import global_path
@@ -30,7 +29,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QLineEdit,
-    QComboBox, QScrollArea, QFrame,
+    QComboBox,
+    QScrollArea,
+    QFrame,
 )
 import mediapipe as mp
 
@@ -38,12 +39,11 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-global ret, cv_img, CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB
+global ret, cv_img, CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
 
 
 class VIDEO_PLAYER(QThread):
     def run(self):
-
         print("started")
         prev_time = 0
         FPS = 30
@@ -86,7 +86,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-                min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -127,7 +127,7 @@ class WEBCAP_GET(QThread):
     def run(self):
         prev_time = 0
         FPS = 30
-        global CAM_IMAGE, WEBCAM, WEBCAM_ON, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB
+        global CAM_IMAGE, WEBCAM, WEBCAM_ON, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
         while WEBCAM_ON and VID_PLAYING:
             # print(LANDMARK)
             current_time = time.time() - prev_time
@@ -136,6 +136,8 @@ class WEBCAP_GET(QThread):
                 WEBCAM.write(CAM_IMAGE)
         WEBCAM.release()
         WEBCAM_ON = False
+        OPTION_BOX_2_STATUS_LABEL_GLOB.setText(f"Recording Done")
+        video_to_pose_data.convert(self.CURRENT_DANCE_VIDEO_PATH, dev=True)
 
 
 class sodimm_UI_MainWindow(QMainWindow):
@@ -149,6 +151,8 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.DANCE_SELECTED = False
         self.CURRENT_DANCE_VIDEO_PATH = None
+        global CURRENT_DANCE_VIDEO_PATH_GLOB
+        CURRENT_DANCE_VIDEO_PATH_GLOB = self.CURRENT_DANCE_VIDEO_PATH
         global DANCE_SELECTED_GLOB
         DANCE_SELECTED_GLOB = self.DANCE_SELECTED
 
@@ -196,6 +200,8 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.OPTION_BOX_2_STATUS_LABEL = QLabel()
         self.OPTION_BOX_2_STATUS_LABEL.setFont(QFont(self.Pretendard_SemiBold, 10))
+        global OPTION_BOX_2_STATUS_LABEL_GLOB
+        OPTION_BOX_2_STATUS_LABEL_GLOB = self.OPTION_BOX_2_STATUS_LABEL
 
         self.OPTION_BOX_2_RECORD_START = QPushButton("Record start")
         self.OPTION_BOX_2_RECORD_START.setFont(QFont(self.Pretendard_SemiBold, 20))
@@ -218,9 +224,14 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.RELOAD_BTN.setFont(QFont(self.Pretendard_SemiBold, 20))
         self.RELOAD_BTN.clicked.connect(lambda: self.REFRESH_CLICKED())
 
+        self.BACKTO_BTN = QPushButton("Back")
+        self.BACKTO_BTN.setFont(QFont(self.Pretendard_SemiBold, 20))
+        self.BACKTO_BTN.clicked.connect(lambda: self.BACKTO_BTN_CLICKED())
+        self.BACKTO_BTN.setEnabled(False)
+
         self.video_list = []
-        self.API_HOST = 'https://kaist.me/api/ksa/DS/api.php'
-        self.get_video_list_param = {'apiName': ['list']}
+        self.API_HOST = "https://kaist.me/api/ksa/DS/api.php"
+        self.get_video_list_param = {"apiName": ["list"]}
 
         self.video_scroll_area = QScrollArea()
         self.video_widget = QWidget()
@@ -242,7 +253,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -259,6 +270,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.RIGHT_NAME_BOX.addWidget(self.RIGHT_GRID_TOP_TEXT)
         self.RIGHT_NAME_BOX.addWidget(self.ID_INPUT)
         self.RIGHT_NAME_BOX.addWidget(self.RELOAD_BTN)
+        self.RIGHT_NAME_BOX.addWidget(self.BACKTO_BTN)
         self.RIGHT_GRID.addLayout(self.RIGHT_NAME_BOX)
         self.RIGHT_GRID.addWidget(self.video_scroll_area)
 
@@ -274,17 +286,19 @@ class sodimm_UI_MainWindow(QMainWindow):
                 self.video_ui.takeAt(i).widget().setParent(None)
             self.video_ui.takeAt(0)
             try:
-                response = requests.post(self.API_HOST, params=self.get_video_list_param)
+                response = requests.post(
+                    self.API_HOST, params=self.get_video_list_param
+                )
                 content = response.json()
                 for i in content:
-                    c = [i['i'], i['user_id'], i['filename']]
+                    c = [i["i"], i["user_id"], i["filename"]]
                     self.video_list.append(c)
                 print(self.video_list)
                 for i in self.video_list:
-                    Q = QPushButton(f'{i[1]} - {Path(i[2]).stem}')
+                    Q = QPushButton(f"{i[1]} - {Path(i[2]).stem}")
                     Q.setFont(QFont(self.Pretendard_SemiBold, 20))
                     Q.clicked.connect(self.Q_BTN_CLICKED)
-                    self.video_ui_button_list[f'{i[1]} - {Path(i[2]).stem}'] = i[2]
+                    self.video_ui_button_list[f"{i[1]} - {Path(i[2]).stem}"] = i[2]
                     self.video_ui.addWidget(Q)
                 self.video_ui.addStretch(1)
             except Exception as e:
@@ -294,6 +308,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def Q_BTN_CLICKED(self):
         global DOWNLOADED_VIDEO_PATH, VID_LALABEL
+        self.BACKTO_BTN.setEnabled(True)
         btn = self.sender()
         print(self.video_ui_button_list[btn.text()])
         self.OPTION_BOX_SELECT_INDICATOR.setText(btn.text())
@@ -309,11 +324,28 @@ class sodimm_UI_MainWindow(QMainWindow):
             print("dance selected")
             DOWNLOADED_VIDEO_PATH = savename
             self.VID_LABEL.setText("VIDEO LOADED.")
+            self.OPTION_BOX_2_RECORD_START.setEnabled(True)
 
         except Exception as e:
-            self.OPTION_BOX_2_STATUS_LABEL.setText(
-                str(e)
-            )
+            self.OPTION_BOX_2_RECORD_START.setEnabled(False)
+            self.OPTION_BOX_2_STATUS_LABEL.setText(str(e))
+
+    def clearLayout(self, layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    self.clearLayout(item.layout())
+
+    def BACKTO_BTN_CLICKED(self):
+        self.VID_LABEL.setParent(None)
+        self.RIGHT_GRID.addWidget(self.video_scroll_area)
+        self.BACKTO_BTN.setEnabled(False)
+        self.DANCE_SELECTED = False
+        self.OPTION_BOX_2_RECORD_START.setEnabled(False)
 
     def VIDEO_PLAY(self):
         print("thread on")
@@ -344,14 +376,14 @@ class sodimm_UI_MainWindow(QMainWindow):
         return QPixmap.fromImage(p)
 
     def RECORD_START(self):
-        global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT
+        global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, CURRENT_DANCE_VIDEO_PATH_GLOB
         if self.DANCE_SELECTED:
             self.OPTION_BOX_2_RECORD_START.setEnabled(False)
 
             file_name = hashlib.sha256(
                 (
-                        str(datetime.datetime.now()).replace(" ", "")
-                        + str(random.randrange(0, 10000000))
+                    str(datetime.datetime.now()).replace(" ", "")
+                    + str(random.randrange(0, 10000000))
                 ).encode()
             ).hexdigest()
             file_path = global_path.get_proj_abs_path(f"videos/{file_name}.mp4")
