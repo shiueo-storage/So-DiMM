@@ -15,7 +15,7 @@ import requests
 from PySide6 import QtGui
 from PySide6.QtCore import QThread, Slot, Signal, QTimer
 from PySide6.QtGui import QPixmap, Qt, QFont
-
+from requests_toolbelt import MultipartEncoder
 from utils import global_path
 from src.UI.ui_utils import font
 from src.UI.window import window
@@ -51,7 +51,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-            min_detection_confidence=0.5, min_tracking_confidence=0.5
+                min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -200,7 +200,7 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -250,7 +250,7 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
             self.OPTION_BOX_2_RECORD_STOP.setEnabled(True)
             VID_PLAYING = True
 
-            FILE_NAME = f"{self.ID_INPUT.text()} - {self.VID_NAME.text()}"
+            FILE_NAME = f"{self.VID_NAME.text()}"
             file_path = global_path.get_proj_abs_path(f"videos/{FILE_NAME}.mp4")
             self.CURRENT_DANCE_VIDEO_PATH = file_path
             CURRENT_DANCE_VIDEO_PATH_GLOB = file_path
@@ -281,21 +281,29 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
     def UPLOAD_BTN(self):
         global CURRENT_DANCE_VIDEO_PATH_GLOB, FILE_NAME
         self.UPLOAD_BOX.setEnabled(False)
+        API_V_HOST = "https://kaist.me/api/ksa/DS/video.php"
         API_HOST = "https://kaist.me/api/ksa/DS/api.php"
-        upload = (FILE_NAME, open(CURRENT_DANCE_VIDEO_PATH_GLOB, "rb"))
-        upload_vid_param = {"apiName": ["upload"], "file": [upload]}
 
-        try:
-            res = requests.post(API_HOST, params=upload_vid_param)
-            headers = {"i": "9999", "user_id": self.ID_INPUT.text()}
-            print(res.text)
-            print("upload done")
+        with open(CURRENT_DANCE_VIDEO_PATH_GLOB, "rb") as f:
+            print(CURRENT_DANCE_VIDEO_PATH_GLOB)
+            print(FILE_NAME)
+            upload_vid_param = {"user_id": self.ID_INPUT.text(), "file": (FILE_NAME+".mp4", f, 'video')}
 
-            response = requests.post(
-                API_HOST, params={"apiName": ["list"]}, headers=headers
-            )
-            content = response.json()
-            print(content)
+            try:
 
-        except Exception as e:
-            print(e)
+                m = MultipartEncoder(fields=upload_vid_param)
+                headers = {'Content-Type': m.content_type}
+                print(m.content_type)
+                res = requests.post(API_V_HOST, headers=headers, data=m)
+                self.OPTION_BOX_2_STATUS_LABEL.setText(res.text)
+                print(res.text)
+                print("upload done")
+
+                response = requests.post(
+                    API_HOST, params={"apiName": ["list"]}
+                )
+                content = response.json()
+                print(content)
+
+            except Exception as e:
+                self.OPTION_BOX_2_STATUS_LABEL.setText(str(e))
