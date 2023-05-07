@@ -278,9 +278,7 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.video_ui.takeAt(i).widget().setParent(None)
         self.video_ui.takeAt(0)
         try:
-            response = requests.post(
-                self.API_HOST, params=self.get_video_list_param
-            )
+            response = requests.post(self.API_HOST, params=self.get_video_list_param)
             content = response.json()
             for i in content:
                 c = [i["i"], i["user_id"], i["filename"]]

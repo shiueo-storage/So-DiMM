@@ -51,7 +51,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-                min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -152,7 +152,7 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
 
         self.OPTION_BOX_2 = QHBoxLayout()
 
-        self.ID_LABEL = QLabel('ID:')
+        self.ID_LABEL = QLabel("ID:")
         self.ID_LABEL.setFont(QFont(self.Pretendard_SemiBold, 20))
 
         self.ID_INPUT = QLineEdit()
@@ -200,7 +200,7 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -268,7 +268,7 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
                 f"recording started\n{file_path[:len(file_path) // 2]}\n{file_path[len(file_path) // 2:]}"
             )
         else:
-            self.OPTION_BOX_2_STATUS_LABEL.setText('we need id and vid name.')
+            self.OPTION_BOX_2_STATUS_LABEL.setText("we need id and vid name.")
 
     def RECORD_STOP(self):
         global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, CURRENT_DANCE_VIDEO_PATH_GLOB, VID_PLAYING
@@ -282,12 +282,12 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
         global CURRENT_DANCE_VIDEO_PATH_GLOB, FILE_NAME
         self.UPLOAD_BOX.setEnabled(False)
         API_HOST = "https://kaist.me/api/ksa/DS/api.php"
-        upload = (FILE_NAME, open(CURRENT_DANCE_VIDEO_PATH_GLOB, 'rb'))
+        upload = (FILE_NAME, open(CURRENT_DANCE_VIDEO_PATH_GLOB, "rb"))
         upload_vid_param = {"apiName": ["upload"], "file": [upload]}
 
         try:
             res = requests.post(API_HOST, params=upload_vid_param)
-            headers = {'i': '9999', 'user_id': self.ID_INPUT.text()}
+            headers = {"i": "9999", "user_id": self.ID_INPUT.text()}
             print(res.text)
             print("upload done")
 
@@ -296,7 +296,6 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
             )
             content = response.json()
             print(content)
-
 
         except Exception as e:
             print(e)
