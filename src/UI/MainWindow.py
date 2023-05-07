@@ -127,7 +127,7 @@ class WEBCAP_GET(QThread):
     def run(self):
         prev_time = 0
         FPS = 30
-        global CAM_IMAGE, WEBCAM, WEBCAM_ON, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
+        global CAM_IMAGE, WEBCAM, WEBCAM_ON, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB
         while WEBCAM_ON and VID_PLAYING:
             # print(LANDMARK)
             current_time = time.time() - prev_time
@@ -137,7 +137,8 @@ class WEBCAP_GET(QThread):
         WEBCAM.release()
         WEBCAM_ON = False
         OPTION_BOX_2_STATUS_LABEL_GLOB.setText(f"Recording Done")
-        video_to_pose_data.convert(self.CURRENT_DANCE_VIDEO_PATH, dev=True)
+        print(CURRENT_DANCE_VIDEO_PATH_GLOB)
+        video_to_pose_data.convert(CURRENT_DANCE_VIDEO_PATH_GLOB, dev=True)
 
 
 class sodimm_UI_MainWindow(QMainWindow):
@@ -214,12 +215,6 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.RIGHT_NAME_BOX = QHBoxLayout()
 
-        self.ID_INPUT = QLineEdit()
-        self.ID_INPUT.setPlaceholderText("need ID to refresh.")
-        self.ID_INPUT.setFont(QFont(self.Pretendard_SemiBold, 20))
-        self.RIGHT_GRID_TOP_TEXT = QLabel("ID:")
-        self.RIGHT_GRID_TOP_TEXT.setFont(QFont(self.Pretendard_SemiBold, 20))
-
         self.RELOAD_BTN = QPushButton("Refresh")
         self.RELOAD_BTN.setFont(QFont(self.Pretendard_SemiBold, 20))
         self.RELOAD_BTN.clicked.connect(lambda: self.REFRESH_CLICKED())
@@ -267,8 +262,6 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.OPTION_BOX_2.addWidget(self.OPTION_BOX_2_RECORD_START)
 
-        self.RIGHT_NAME_BOX.addWidget(self.RIGHT_GRID_TOP_TEXT)
-        self.RIGHT_NAME_BOX.addWidget(self.ID_INPUT)
         self.RIGHT_NAME_BOX.addWidget(self.RELOAD_BTN)
         self.RIGHT_NAME_BOX.addWidget(self.BACKTO_BTN)
         self.RIGHT_GRID.addLayout(self.RIGHT_NAME_BOX)
@@ -280,31 +273,30 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.GRID.addLayout(self.OPTION_BOX, 2, 1, 2, 1)
 
     def REFRESH_CLICKED(self):
-        if self.ID_INPUT.text():
-            self.video_list.clear()
-            for i in reversed(range(self.video_ui.count() - 1)):
-                self.video_ui.takeAt(i).widget().setParent(None)
-            self.video_ui.takeAt(0)
-            try:
-                response = requests.post(
-                    self.API_HOST, params=self.get_video_list_param
-                )
-                content = response.json()
-                for i in content:
-                    c = [i["i"], i["user_id"], i["filename"]]
-                    self.video_list.append(c)
-                print(self.video_list)
-                for i in self.video_list:
-                    Q = QPushButton(f"{i[1]} - {Path(i[2]).stem}")
-                    Q.setFont(QFont(self.Pretendard_SemiBold, 20))
-                    Q.clicked.connect(self.Q_BTN_CLICKED)
-                    self.video_ui_button_list[f"{i[1]} - {Path(i[2]).stem}"] = i[2]
-                    self.video_ui.addWidget(Q)
-                self.video_ui.addStretch(1)
-            except Exception as e:
-                error = QLabel(str(e))
-                error.setFont(QFont(self.Pretendard_SemiBold, 20))
-                self.video_ui.addWidget(error)
+        self.video_list.clear()
+        for i in reversed(range(self.video_ui.count() - 1)):
+            self.video_ui.takeAt(i).widget().setParent(None)
+        self.video_ui.takeAt(0)
+        try:
+            response = requests.post(
+                self.API_HOST, params=self.get_video_list_param
+            )
+            content = response.json()
+            for i in content:
+                c = [i["i"], i["user_id"], i["filename"]]
+                self.video_list.append(c)
+            print(self.video_list)
+            for i in self.video_list:
+                Q = QPushButton(f"{i[1]} - {Path(i[2]).stem}")
+                Q.setFont(QFont(self.Pretendard_SemiBold, 20))
+                Q.clicked.connect(self.Q_BTN_CLICKED)
+                self.video_ui_button_list[f"{i[1]} - {Path(i[2]).stem}"] = i[2]
+                self.video_ui.addWidget(Q)
+            self.video_ui.addStretch(1)
+        except Exception as e:
+            error = QLabel(str(e))
+            error.setFont(QFont(self.Pretendard_SemiBold, 20))
+            self.video_ui.addWidget(error)
 
     def Q_BTN_CLICKED(self):
         global DOWNLOADED_VIDEO_PATH, VID_LALABEL
@@ -388,6 +380,7 @@ class sodimm_UI_MainWindow(QMainWindow):
             ).hexdigest()
             file_path = global_path.get_proj_abs_path(f"videos/{file_name}.mp4")
             self.CURRENT_DANCE_VIDEO_PATH = file_path
+            CURRENT_DANCE_VIDEO_PATH_GLOB = file_path
 
             fourcc = cv2.VideoWriter_fourcc(*"MP4V")
             fps = 30

@@ -183,7 +183,6 @@ def convert(video_path, dev=False):
                     u_list[i][0].append(SODIMM_POINTS.landmark[i].x)
                     u_list[i][1].append(SODIMM_POINTS.landmark[i].y)
                     u_list[i][2].append(SODIMM_POINTS.landmark[i].visibility)
-                print(c_cap)
 
             c_cap += 1
 
@@ -202,11 +201,5 @@ def convert(video_path, dev=False):
                     break
     cap.release()
     cv2.destroyAllWindows()
-    fig = plt.figure(figsize=(9, 6))
-    ax = fig.add_subplot(111, projection="3d")
-    for i in range(len(u_list)):
-        ax.plot(u_list[i][0], u_list[i][1], u_list[i][2], label=parts_list[i])
-    ax.legend()
-    plt.show()
 
     exel_file.save("test.xlsx")
