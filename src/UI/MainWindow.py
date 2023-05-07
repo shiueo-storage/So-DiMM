@@ -48,31 +48,32 @@ class VIDEO_PLAYER(QThread):
         prev_time = 0
         FPS = 30
 
-        global DOWNLOADED_VIDEO_PATH, VID_LALABEL, CAM_WIDTH, CAM_HEIGHT, VID_PLAYING
+        global DOWNLOADED_VIDEO_PATH, VID_LALABEL, CAM_WIDTH, CAM_HEIGHT, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB
         VID_PLAYING = True
         print(DOWNLOADED_VIDEO_PATH)
         cap = cv2.VideoCapture(DOWNLOADED_VIDEO_PATH)
         print(cap.isOpened)
+        OPTION_BOX_2_RECORD_START_GLOB.setEnabled(False)
         while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
-            convert_to_Qt_format = QtGui.QImage(
-                rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888
-            )
-            p = convert_to_Qt_format.scaled(CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio)
-
             current_time = time.time() - prev_time
             if current_time > 1.0 / FPS:
                 prev_time = time.time()
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = rgb_image.shape
+                bytes_per_line = ch * w
+                convert_to_Qt_format = QtGui.QImage(
+                    rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888
+                )
+                p = convert_to_Qt_format.scaled(CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio)
                 VID_LALABEL.setPixmap(QPixmap.fromImage(p))
 
         cap.release()
         print("video played")
+        OPTION_BOX_2_RECORD_START_GLOB.setEnabled(True)
         VID_PLAYING = False
 
 
@@ -138,12 +139,14 @@ class WEBCAP_GET(QThread):
         WEBCAM_ON = False
         OPTION_BOX_2_STATUS_LABEL_GLOB.setText(f"Recording Done")
         print(CURRENT_DANCE_VIDEO_PATH_GLOB)
+        print("running detetctor")
         video_to_pose_data.convert(CURRENT_DANCE_VIDEO_PATH_GLOB, dev=True)
 
 
 class sodimm_UI_MainWindow(QMainWindow):
     def __init__(self):
-        global CAM_WIDTH, CAM_HEIGHT, WEBCAM_ON
+        global CAM_WIDTH, CAM_HEIGHT, WEBCAM_ON, VID_PLAYING
+        VID_PLAYING = False
         WEBCAM_ON = False
         super(sodimm_UI_MainWindow, self).__init__()
         font.load_font(w=self)
@@ -366,7 +369,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         return QPixmap.fromImage(p)
 
     def RECORD_START(self):
-        global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, CURRENT_DANCE_VIDEO_PATH_GLOB
+        global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, CURRENT_DANCE_VIDEO_PATH_GLOB, VID_PLAYING
         if self.DANCE_SELECTED:
             self.OPTION_BOX_2_RECORD_START.setEnabled(False)
 
@@ -389,6 +392,7 @@ class sodimm_UI_MainWindow(QMainWindow):
             WEBCAM_ON = True
             self.CAM_RECORDING_OUT = WEBCAP_GET()
             self.VID_PLAYER_THREAD.start()
+            VID_PLAYING = True
             self.CAM_RECORDING_OUT.start()
             self.OPTION_BOX_2_STATUS_LABEL.setText(
                 f"recording started\n{file_path[:len(file_path) // 2]}\n{file_path[len(file_path) // 2:]}"
