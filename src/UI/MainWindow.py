@@ -3,6 +3,7 @@ import datetime
 import json
 import hashlib
 import os.path
+import pprint
 import random
 
 import urllib.request
@@ -39,7 +40,7 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-global ret, cv_img, CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
+global CAM_W_TEXT_GLOB, ret, DATA1, DATA2, MIN_LEN_DATA, cv_img, CAM_WIDTH, CAM_HEIGHT, JUMSOO_THREAD, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
 
 
 class VIDEO_PLAYER(QThread):
@@ -87,7 +88,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-            min_detection_confidence=0.5, min_tracking_confidence=0.5
+                min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -124,11 +125,30 @@ class VIDEOTHREAD(QThread):
         cap.release()
 
 
+class JUMSOO(QThread):
+    global DATA1, DATA2, MIN_LEN_DATA, CAM_W_TEXT_GLOB
+
+    def run(self):
+        s = 0
+        print("score!")
+        WHOLE_LEN = MIN_LEN_DATA * 33  # MP NUM
+        print(WHOLE_LEN)
+        print(MIN_LEN_DATA)
+        for i in range(33):
+            for j in range(MIN_LEN_DATA):
+                x_v = (1 - abs(DATA1[i][0][j] - DATA2[i][0][j]))**4
+                y_v = (1 - abs(DATA1[i][1][j] - DATA2[i][1][j]))**4
+                s += x_v + y_v
+        score = (s / (WHOLE_LEN*2))*100
+        print(s / (WHOLE_LEN*2))
+        CAM_W_TEXT_GLOB.setText(f"SCORE: {score}")
+
+
 class WEBCAP_GET(QThread):
     def run(self):
         prev_time = 0
         FPS = 30
-        global CAM_IMAGE, WEBCAM, WEBCAM_ON, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB
+        global CAM_IMAGE, DATA1, DATA2, MIN_LEN_DATA, WEBCAM, WEBCAM_ON, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB
         while WEBCAM_ON and VID_PLAYING:
             # print(LANDMARK)
             current_time = time.time() - prev_time
@@ -140,12 +160,20 @@ class WEBCAP_GET(QThread):
         OPTION_BOX_2_STATUS_LABEL_GLOB.setText(f"Recording Done")
         print(CURRENT_DANCE_VIDEO_PATH_GLOB)
         print("running detetctor")
-        video_to_pose_data.convert(CURRENT_DANCE_VIDEO_PATH_GLOB, dev=True)
+        DATA1 = video_to_pose_data.convert(CURRENT_DANCE_VIDEO_PATH_GLOB, dev=True)
+        DATA2 = video_to_pose_data.convert(DOWNLOADED_VIDEO_PATH, dev=True)
+        len_data1 = len(DATA1[0][0])
+        len_data2 = len(DATA2[0][0])
+
+        MIN_LEN_DATA = min(len_data1, len_data2)
+        JUMSOO_THREAD.start()
 
 
 class sodimm_UI_MainWindow(QMainWindow):
     def __init__(self):
-        global CAM_WIDTH, CAM_HEIGHT, WEBCAM_ON, VID_PLAYING
+        global CAM_WIDTH, CAM_HEIGHT, WEBCAM_ON, VID_PLAYING, JUMSOO_THREAD, CAM_W_TEXT_GLOB
+        JUMSOO_THREAD = JUMSOO()
+
         VID_PLAYING = False
         WEBCAM_ON = False
         super(sodimm_UI_MainWindow, self).__init__()
@@ -169,8 +197,10 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.GRID = QGridLayout(self.widget)
         self.setCentralWidget(self.widget)
 
-        self.CAM_W_TEXT = QLabel("Your CAM")
+        self.CAM_W_TEXT = QLabel("SCORE: NULL")
         self.CAM_W_TEXT.setFont(QFont(self.Pretendard_SemiBold, 20))
+
+        CAM_W_TEXT_GLOB = self.CAM_W_TEXT
 
         self.CAM_LABEL = QLabel()
         CAM_WIDTH = 512
@@ -251,7 +281,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -375,8 +405,8 @@ class sodimm_UI_MainWindow(QMainWindow):
 
             file_name = hashlib.sha256(
                 (
-                    str(datetime.datetime.now()).replace(" ", "")
-                    + str(random.randrange(0, 10000000))
+                        str(datetime.datetime.now()).replace(" ", "")
+                        + str(random.randrange(0, 10000000))
                 ).encode()
             ).hexdigest()
             file_path = global_path.get_proj_abs_path(f"videos/{file_name}.mp4")
