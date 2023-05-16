@@ -126,7 +126,7 @@ class VIDEOTHREAD(QThread):
 
 
 class JUMSOO(QThread):
-    global DATA1, DATA2, MIN_LEN_DATA, CAM_W_TEXT_GLOB
+    global DATA1, DATA2, MIN_LEN_DATA, CAM_W_TEXT_GLOB, CAM_WIDTH, CAM_HEIGHT
 
     def run(self):
         s = 0

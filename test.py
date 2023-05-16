@@ -1,7 +1,2 @@
-import requests
-
-API_HOST = "https://kaist.me/api/ksa/DS/api.php"
-params = {"apiName": ["list"]}
-
-u = response = requests.post(API_HOST, params=params)
-print(u.json())
+n = int(input())
+print(f"The largest square has side length {int(n**0.5)}.")
