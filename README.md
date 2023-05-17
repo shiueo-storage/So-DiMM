@@ -39,7 +39,7 @@ Currently, there are various approaches in the field of dance games. Some involv
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
 
 ### Prerequisites
-There is `requirements.txt` in the root folder. Just run 
+There is [requirements.txt](https://github.com/shiueo-storage/So-DiMM/blob/main/requirements.txt) in the root folder. Just run 
 
 ```
 pip install -r requirements.txt
