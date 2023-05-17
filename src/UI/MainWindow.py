@@ -79,7 +79,9 @@ class VIDEO_PLAYER(QThread):
                 convert_to_Qt_format = QtGui.QImage(
                     rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888
                 )
-                p = convert_to_Qt_format.scaled(CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio)
+                p = convert_to_Qt_format.scaled(
+                    CAM_WIDTH, CAM_HEIGHT, Qt.KeepAspectRatio
+                )
                 VID_LALABEL.setPixmap(QPixmap.fromImage(p))
 
         cap.release()
@@ -98,7 +100,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-                min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -154,10 +156,16 @@ class JUMSOO(QThread):
         CAM_W_TEXT_GLOB.setText(f"SCORE: {score}")
         if GLOBAL_ID_INPUT.text():
             print(GLOBAL_ID_INPUT.text(), pathlib.Path(DOWNLOADED_VIDEO_PATH).stem)
-            param = {"apiName": "uploadScore", "user_id": str(GLOBAL_ID_INPUT.text()),
-                     "filename": str(pathlib.Path(DOWNLOADED_VIDEO_PATH).stem), "score": str(score)}
+            param = {
+                "apiName": "uploadScore",
+                "user_id": str(GLOBAL_ID_INPUT.text()),
+                "filename": str(pathlib.Path(DOWNLOADED_VIDEO_PATH).stem),
+                "score": str(score),
+            }
             try:
-                response = requests.post("https://kaist.me/api/ksa/DS/api.php", data=param)
+                response = requests.post(
+                    "https://kaist.me/api/ksa/DS/api.php", data=param
+                )
                 print(response.status_code)
             except Exception as e:
                 print(e)
@@ -321,7 +329,7 @@ class sodimm_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -483,8 +491,8 @@ class sodimm_UI_MainWindow(QMainWindow):
 
             file_name = hashlib.sha256(
                 (
-                        str(datetime.datetime.now()).replace(" ", "")
-                        + str(random.randrange(0, 10000000))
+                    str(datetime.datetime.now()).replace(" ", "")
+                    + str(random.randrange(0, 10000000))
                 ).encode()
             ).hexdigest()
             file_path = global_path.get_proj_abs_path(f"videos/{file_name}.mp4")

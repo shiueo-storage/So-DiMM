@@ -52,7 +52,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         with mp_pose.Pose(
-                min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
                 success, image = cap.read()
@@ -201,7 +201,7 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
 
     def initUI(self):
         with open(
-                file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
+            file=global_path.get_proj_abs_path("assets/stylesheet.txt"), mode="r"
         ) as f:
             self.setStyleSheet(f.read())
 
@@ -288,21 +288,21 @@ class sodimm_uploader_UI_MainWindow(QMainWindow):
         with open(CURRENT_DANCE_VIDEO_PATH_GLOB, "rb") as f:
             print(CURRENT_DANCE_VIDEO_PATH_GLOB)
             print(FILE_NAME)
-            upload_vid_param = {"user_id": self.ID_INPUT.text(), "file": (FILE_NAME+".mp4", f, 'video')}
+            upload_vid_param = {
+                "user_id": self.ID_INPUT.text(),
+                "file": (FILE_NAME + ".mp4", f, "video"),
+            }
 
             try:
-
                 m = MultipartEncoder(fields=upload_vid_param)
-                headers = {'Content-Type': m.content_type}
+                headers = {"Content-Type": m.content_type}
                 print(m.content_type)
                 res = requests.post(API_V_HOST, headers=headers, data=m)
                 self.OPTION_BOX_2_STATUS_LABEL.setText(res.text)
                 print(res.text)
                 print("upload done")
 
-                response = requests.post(
-                    API_HOST, params={"apiName": ["list"]}
-                )
+                response = requests.post(API_HOST, params={"apiName": ["list"]})
                 content = response.json()
                 print(content)
 

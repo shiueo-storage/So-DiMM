@@ -8,6 +8,7 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
+
 def convert(video_path, dev=False):
     parts_list = [
         "nose",
@@ -173,7 +174,7 @@ def convert(video_path, dev=False):
 
             SODIMM_POINTS = results.pose_landmarks
             if SODIMM_POINTS:
-                #print(SODIMM_POINTS.landmark)
+                # print(SODIMM_POINTS.landmark)
                 for i in range(len(SODIMM_POINTS.landmark)):
                     if SODIMM_POINTS.landmark[i].visibility > 0.2:
                         u_list[i][0].append(SODIMM_POINTS.landmark[i].x)
