@@ -32,16 +32,21 @@
 - [Acknowledgments](#acknowledgement)
 
 ## 🧐 About <a name = "about"></a>
-Write about 1-2 paragraphs describing the purpose of your project.
+현재 댄스 게임 분야에서는 다양한 접근 방식이 있습니다. 일부는 VR 기기를 사용하여 
+몸을 움직이거나, 저스트댄스와 같이 휴대폰을 직접 잡고 움직이는 방식입니다. 그러나 저희는 
+웹캠만으로도 몸의 관절 움직임을 캡처할 수 있다는 사실을 알게 되었고, 이를 활용하여 편리하고 
+쉽게 댄스 배틀 앱을 제작하기로 결정했습니다. 이 방식을 통해 사용자들은 기본적으로 탑재된 
+웹캠을 사용하여 자연스럽고 간편하게 댄스 동작을 수행할 수 있습니다.
+
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
 
 ### Prerequisites
-What things you need to install the software and how to install them.
+There is `requirements.txt` in the root folder. Just run 
 
 ```
-Give examples
+pip install -r requirements.txt
 ```
 
 ### Installing
