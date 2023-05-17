@@ -52,7 +52,7 @@ If you encounter any further issues, it is likely a problem with your virtual en
 Please navigate to the directory where the So-DiMM project is installed and execute the SoDiMM.py file.
 
 ## 🎈 Usage <a name="usage"></a>
-Add notes about how to use the system.
+So-DiMM features a very simple and intuitive GUI.
 
 ## 🚀 Deployment <a name = "deployment"></a>
 Add additional notes about how to deploy this on a live system.
