@@ -47,7 +47,7 @@ global FPS, CURRENT_RANKING, CAM_W_TEXT_GLOB, ret, DATA1, GLOBAL_ID_INPUT, DATA2
 
 class SOUND_PLAYER(QThread):
     def run(self):
-        playsound.playsound(global_path.get_proj_abs_path("assets/zerotwou.wav"))
+        playsound.playsound(global_path.get_proj_abs_path("assets/tocatoca.wav"))
 
 
 class VIDEO_PLAYER(QThread):
