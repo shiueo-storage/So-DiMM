@@ -41,5 +41,5 @@ build.build(
     product_version=config["version"],
     icon=global_path.get_proj_abs_path("assets/sodimm_icon.png"),
     plugin_dict=["pyside6"],
-    include_package_dict=[],
+    include_package_dict=["mediapipe"],
 )
