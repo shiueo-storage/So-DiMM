@@ -33,6 +33,7 @@ from tools import clear
 def build(
     withconsole,
     path,
+    onefile,
     file_dict,
     companyname,
     product_version,
@@ -52,11 +53,19 @@ def build(
             for i in range(0, len(file_dict)):
                 should_include.append(os.path.join(os.path.dirname(path), file_dict[i]))
 
-        command = (
-            f"python -m nuitka --clang --show-modules --follow-imports "
-            f"--windows-company-name={companyname} --windows-product-version={product_version} "
-            f"--output-dir={Output_dir_name} --verbose --assume-yes-for-downloads --onefile "
-        )
+        if onefile:
+            command = (
+                f"python -m nuitka --clang --show-modules --follow-imports "
+                f"--windows-company-name={companyname} --windows-product-version={product_version} "
+                f"--output-dir={Output_dir_name} --verbose --assume-yes-for-downloads --onefile "
+            )
+        else:
+            command = (
+                f"python -m nuitka --clang --show-modules --follow-imports "
+                f"--windows-company-name={companyname} --windows-product-version={product_version} "
+                f"--output-dir={Output_dir_name} --verbose --assume-yes-for-downloads "
+            )
+
         for i in range(0, len(should_include)):
             command += f"--include-data-dir={should_include[i]}={file_dict[i]} "
         for i in range(0, len(plugin_dict)):
