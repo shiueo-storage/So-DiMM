@@ -45,6 +45,7 @@ There is `requirements.txt` in the root folder. Just run
 pip install -r requirements.txt
 ```
 That's all! Everything is perfectly set up for running the program!  
+
 If you encounter any further issues, it is likely a problem with your virtual environment (venv) rather than the project itself. Please report any additional errors in the [Issues](https://github.com/shiueo-storage/So-DiMM/issues) section so that we can assist you further.
 
 ## 🔧 Running
