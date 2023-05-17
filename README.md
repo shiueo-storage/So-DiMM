@@ -60,6 +60,8 @@ Add additional notes about how to deploy this on a live system.
 ## ⛏️ Built Using <a name = "built_using"></a>
 - [Python](https://www.python.org/) - Language
 - [Qt](https://www.qt.io/) - GUI Framework
+- [Nuitka](https://github.com/Nuitka/Nuitka) - Packaging App
+- [MediaPipe](https://google.github.io/mediapipe/) - for the Pose Detection
 - [VueJs](https://vuejs.org/) - Web Framework
 - [NodeJs](https://nodejs.org/en/) - Server Environment
 
