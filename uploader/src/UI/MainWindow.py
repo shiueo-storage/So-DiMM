@@ -8,6 +8,7 @@ import random
 import urllib.request
 import time
 from pathlib import Path
+import playsound
 
 import cv2
 import numpy as np

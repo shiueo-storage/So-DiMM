@@ -3,6 +3,7 @@ import datetime
 import json
 import hashlib
 import os.path
+import pathlib
 import pprint
 import random
 
@@ -35,19 +36,27 @@ from PySide6.QtWidgets import (
     QFrame,
 )
 import mediapipe as mp
+import playsound
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-global CAM_W_TEXT_GLOB, ret, DATA1, DATA2, MIN_LEN_DATA, cv_img, CAM_WIDTH, CAM_HEIGHT, JUMSOO_THREAD, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
+global FPS, CURRENT_RANKING, CAM_W_TEXT_GLOB, ret, DATA1, GLOBAL_ID_INPUT, DATA2, MIN_LEN_DATA, cv_img, CAM_WIDTH, CAM_HEIGHT, JUMSOO_THREAD, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
+
+
+class SOUND_PLAYER(QThread):
+    def run(self):
+        playsound.playsound(global_path.get_proj_abs_path("assets/zerotwo.wav"))
 
 
 class VIDEO_PLAYER(QThread):
+    global FPS
+
     def run(self):
+        print(FPS)
         print("started")
         prev_time = 0
-        FPS = 30
 
         global DOWNLOADED_VIDEO_PATH, VID_LALABEL, CAM_WIDTH, CAM_HEIGHT, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB
         VID_PLAYING = True
@@ -64,6 +73,7 @@ class VIDEO_PLAYER(QThread):
                     break
 
                 rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                rgb_image = cv2.flip(rgb_image, 1)
                 h, w, ch = rgb_image.shape
                 bytes_per_line = ch * w
                 convert_to_Qt_format = QtGui.QImage(
@@ -114,7 +124,7 @@ class VIDEOTHREAD(QThread):
                     mp_pose.POSE_CONNECTIONS,
                     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
                 )
-
+                image = cv2.flip(image, 1)
                 self.change_pixmap_signal.emit(image)
                 # Flip the image horizontally for a selfie-view display.
                 """
@@ -126,7 +136,7 @@ class VIDEOTHREAD(QThread):
 
 
 class JUMSOO(QThread):
-    global DATA1, DATA2, MIN_LEN_DATA, CAM_W_TEXT_GLOB, CAM_WIDTH, CAM_HEIGHT
+    global DATA1, DATA2, MIN_LEN_DATA, CAM_W_TEXT_GLOB, CAM_WIDTH, CAM_HEIGHT, GLOBAL_ID_INPUT, DOWNLOADED_VIDEO_PATH
 
     def run(self):
         s = 0
@@ -136,12 +146,21 @@ class JUMSOO(QThread):
         print(MIN_LEN_DATA)
         for i in range(33):
             for j in range(MIN_LEN_DATA):
-                x_v = (1 - abs(DATA1[i][0][j] - DATA2[i][0][j]))**4
-                y_v = (1 - abs(DATA1[i][1][j] - DATA2[i][1][j]))**4
+                x_v = (1 - abs(DATA1[i][0][j] - DATA2[i][0][j])) ** 4
+                y_v = (1 - abs(DATA1[i][1][j] - DATA2[i][1][j])) ** 4
                 s += x_v + y_v
-        score = (s / (WHOLE_LEN*2))*100
-        print(s / (WHOLE_LEN*2))
+        score = (s / (WHOLE_LEN * 2)) * 100
+        print(s / (WHOLE_LEN * 2))
         CAM_W_TEXT_GLOB.setText(f"SCORE: {score}")
+        if GLOBAL_ID_INPUT.text():
+            print(GLOBAL_ID_INPUT.text(), pathlib.Path(DOWNLOADED_VIDEO_PATH).stem)
+            param = {"apiName": "uploadScore", "user_id": str(GLOBAL_ID_INPUT.text()),
+                     "filename": str(pathlib.Path(DOWNLOADED_VIDEO_PATH).stem), "score": str(score)}
+            try:
+                response = requests.post("https://kaist.me/api/ksa/DS/api.php", data=param)
+                print(response.status_code)
+            except Exception as e:
+                print(e)
 
 
 class WEBCAP_GET(QThread):
@@ -171,9 +190,12 @@ class WEBCAP_GET(QThread):
 
 class sodimm_UI_MainWindow(QMainWindow):
     def __init__(self):
-        global CAM_WIDTH, CAM_HEIGHT, WEBCAM_ON, VID_PLAYING, JUMSOO_THREAD, CAM_W_TEXT_GLOB
-        JUMSOO_THREAD = JUMSOO()
+        global CAM_WIDTH, CAM_HEIGHT, WEBCAM_ON, VID_PLAYING, JUMSOO_THREAD, CAM_W_TEXT_GLOB, GLOBAL_ID_INPUT, CURRENT_RANKING, FPS
+        FPS = 30
 
+        self.SOUNDER = SOUND_PLAYER()
+        CURRENT_RANKING = []
+        JUMSOO_THREAD = JUMSOO()
         VID_PLAYING = False
         WEBCAM_ON = False
         super(sodimm_UI_MainWindow, self).__init__()
@@ -199,6 +221,14 @@ class sodimm_UI_MainWindow(QMainWindow):
 
         self.CAM_W_TEXT = QLabel("SCORE: NULL")
         self.CAM_W_TEXT.setFont(QFont(self.Pretendard_SemiBold, 20))
+
+        self.CAM_W_ID_LABEL = QLabel("ID:")
+        self.CAM_W_ID_LABEL.setFont(QFont(self.Pretendard_SemiBold, 20))
+        self.CAM_W_ID_INPUT = QLineEdit("ANON")
+        self.CAM_W_ID_INPUT.setMaximumWidth(150)
+        self.CAM_W_ID_INPUT.setPlaceholderText("ID")
+        self.CAM_W_ID_INPUT.setFont(QFont(self.Pretendard_SemiBold, 20))
+        self.CAM_W_ID_INPUT.setMaxLength(8)
 
         CAM_W_TEXT_GLOB = self.CAM_W_TEXT
 
@@ -268,6 +298,15 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.video_widget.setLayout(self.video_ui)
         self.video_scroll_area.setWidgetResizable(True)
 
+        self.ranking_video_scroll_area = QScrollArea()
+        self.ranking_video_widget = QWidget()
+        self.ranking_video_ui = QVBoxLayout()
+        self.ranking_video_scroll_area.setWidget(self.ranking_video_widget)
+        self.ranking_video_widget.setLayout(self.ranking_video_ui)
+        self.ranking_video_scroll_area.setWidgetResizable(True)
+
+        self.CAM_H_2_BOX = QHBoxLayout()
+
         self.video_ui_button_list = {}
 
         self.CAM_RECORDING_OUT = None
@@ -276,6 +315,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.timer.setInterval(1000 / 2)
         self.timer.timeout.connect(lambda: self.updateUI())
         self.timer.start()
+        GLOBAL_ID_INPUT = self.CAM_W_ID_INPUT
 
         self.initUI()
 
@@ -286,6 +326,8 @@ class sodimm_UI_MainWindow(QMainWindow):
             self.setStyleSheet(f.read())
 
         self.CAM_V_BOX.addWidget(self.CAM_W_TEXT)
+        self.CAM_V_BOX.addWidget(self.CAM_W_ID_INPUT)
+        self.CAM_V_BOX.addLayout(self.CAM_H_2_BOX)
         self.CAM_V_BOX.addWidget(self.CAM_LABEL)
         self.CAM_V_BOX.addWidget(self.OPTION_BOX_2_STATUS_LABEL)
         self.CAM_V_BOX.addStretch(1)
@@ -299,6 +341,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         self.RIGHT_NAME_BOX.addWidget(self.BACKTO_BTN)
         self.RIGHT_GRID.addLayout(self.RIGHT_NAME_BOX)
         self.RIGHT_GRID.addWidget(self.video_scroll_area)
+        self.RIGHT_GRID.addWidget(self.ranking_video_scroll_area)
 
         self.GRID.addLayout(self.CAM_V_BOX, 1, 0, 1, 1)
         self.GRID.addLayout(self.OPTION_BOX_2, 2, 0, 2, 1)
@@ -318,16 +361,44 @@ class sodimm_UI_MainWindow(QMainWindow):
                 self.video_list.append(c)
             print(self.video_list)
             for i in self.video_list:
+                QQQ = QHBoxLayout()
                 Q = QPushButton(f"{i[1]} - {Path(i[2]).stem}")
                 Q.setFont(QFont(self.Pretendard_SemiBold, 20))
                 Q.clicked.connect(self.Q_BTN_CLICKED)
+                Q_RANKING = QPushButton("Ranking update")
+                Q_RANKING.setFont(QFont(self.Pretendard_SemiBold, 20))
+                Q_RANKING.clicked.connect(self.Q_RANKING_BTN_CLICKED)
+                Q_RANKING.setObjectName(f"{i[1]} - {Path(i[2]).stem}")
                 self.video_ui_button_list[f"{i[1]} - {Path(i[2]).stem}"] = i[2]
-                self.video_ui.addWidget(Q)
+                QQQ.addWidget(Q)
+                QQQ.addWidget(Q_RANKING)
+                self.video_ui.addLayout(QQQ)
             self.video_ui.addStretch(1)
         except Exception as e:
             error = QLabel(str(e))
             error.setFont(QFont(self.Pretendard_SemiBold, 20))
             self.video_ui.addWidget(error)
+
+    def Q_RANKING_BTN_CLICKED(self):
+        btn = self.sender()
+        global CURRENT_RANKING
+        print(btn.objectName())
+        try:
+            param = {"apiName": "getRanking", "filename": btn.objectName()}
+            response = requests.post("https://kaist.me/api/ksa/DS/api.php", data=param)
+            print(response.json())
+            CURRENT_RANKING = response.json()
+            for i in reversed(range(self.ranking_video_ui.count() - 1)):
+                self.ranking_video_ui.takeAt(i).widget().setParent(None)
+            self.ranking_video_ui.takeAt(0)
+
+            for i in CURRENT_RANKING:
+                w = QPushButton(f"{i['user_id']}: {i['score']}")
+                w.setFont(QFont(self.Pretendard_SemiBold, 20))
+                self.ranking_video_ui.addWidget(w)
+            self.ranking_video_ui.addStretch(1)
+        except Exception as e:
+            print(e)
 
     def Q_BTN_CLICKED(self):
         global DOWNLOADED_VIDEO_PATH, VID_LALABEL
@@ -343,6 +414,7 @@ class sodimm_UI_MainWindow(QMainWindow):
             )
             self.DANCE_SELECTED = True
             self.video_scroll_area.setParent(None)
+            self.ranking_video_scroll_area.setParent(None)
             self.RIGHT_GRID.addWidget(self.VID_LABEL)
             print("dance selected")
             DOWNLOADED_VIDEO_PATH = savename
@@ -366,13 +438,18 @@ class sodimm_UI_MainWindow(QMainWindow):
     def BACKTO_BTN_CLICKED(self):
         self.VID_LABEL.setParent(None)
         self.RIGHT_GRID.addWidget(self.video_scroll_area)
+        self.RIGHT_GRID.addWidget(self.ranking_video_scroll_area)
         self.BACKTO_BTN.setEnabled(False)
         self.DANCE_SELECTED = False
         self.OPTION_BOX_2_RECORD_START.setEnabled(False)
 
     def VIDEO_PLAY(self):
         print("thread on")
+        global FPS
+        FPS = 24
         self.VID_PLAYER_THREAD.start()
+        self.SOUNDER.start()
+
         print("running")
 
     def updateUI(self):
@@ -399,7 +476,8 @@ class sodimm_UI_MainWindow(QMainWindow):
         return QPixmap.fromImage(p)
 
     def RECORD_START(self):
-        global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, CURRENT_DANCE_VIDEO_PATH_GLOB, VID_PLAYING
+        global CAM_WIDTH, CAM_HEIGHT, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, CURRENT_DANCE_VIDEO_PATH_GLOB, VID_PLAYING, FPS
+        FPS = 29
         if self.DANCE_SELECTED:
             self.OPTION_BOX_2_RECORD_START.setEnabled(False)
 
@@ -422,6 +500,7 @@ class sodimm_UI_MainWindow(QMainWindow):
             WEBCAM_ON = True
             self.CAM_RECORDING_OUT = WEBCAP_GET()
             self.VID_PLAYER_THREAD.start()
+            self.SOUNDER.start()
             VID_PLAYING = True
             self.CAM_RECORDING_OUT.start()
             self.OPTION_BOX_2_STATUS_LABEL.setText(
