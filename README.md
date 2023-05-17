@@ -44,40 +44,10 @@ There is `requirements.txt` in the root folder. Just run
 ```
 pip install -r requirements.txt
 ```
+That's all! Everything is perfectly set up for running the program!
 
-### Installing
-A step by step series of examples that tell you how to get a development env running.
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo.
-
-## 🔧 Running the tests <a name = "tests"></a>
-Explain how to run the automated tests for this system.
-
-### Break down into end to end tests
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-Explain what these tests test and why
-
-```
-Give an example
-```
+## 🔧 Running
+Please navigate to the directory where the So-DiMM project is installed and execute the SoDiMM.py file.
 
 ## 🎈 Usage <a name="usage"></a>
 Add notes about how to use the system.
