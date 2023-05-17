@@ -32,11 +32,7 @@
 - [Acknowledgments](#acknowledgement)
 
 ## 🧐 About <a name = "about"></a>
-현재 댄스 게임 분야에서는 다양한 접근 방식이 있습니다. 일부는 VR 기기를 사용하여 
-몸을 움직이거나, 저스트댄스와 같이 휴대폰을 직접 잡고 움직이는 방식입니다. 그러나 저희는 
-웹캠만으로도 몸의 관절 움직임을 캡처할 수 있다는 사실을 알게 되었고, 이를 활용하여 편리하고 
-쉽게 댄스 배틀 앱을 제작하기로 결정했습니다. 이 방식을 통해 사용자들은 기본적으로 탑재된 
-웹캠을 사용하여 자연스럽고 간편하게 댄스 동작을 수행할 수 있습니다.
+Currently, there are various approaches in the field of dance games. Some involve using VR devices to move the body, while others, such as Just Dance, require holding and moving a mobile phone. However, we have discovered that it is possible to capture joint movements using only a webcam. With this in mind, we have decided to create a user-friendly and convenient dance battle app that utilizes this method. By using the built-in webcam, users can easily and naturally perform dance moves.
 
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
