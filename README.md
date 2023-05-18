@@ -34,6 +34,8 @@
 ## 🧐 About <a name = "about"></a>
 Currently, there are various approaches in the field of dance games. Some involve using VR devices to move the body, while others, such as Just Dance, require holding and moving a mobile phone. However, we have discovered that it is possible to capture joint movements using only a webcam. With this in mind, we have decided to create a user-friendly and convenient dance battle app that utilizes this method. By using the built-in webcam, users can easily and naturally perform dance moves.
 
+Our project is divided into two parts: the Uploader client responsible for video uploads and the Discriminator client for dance analysis and scoring. If someone wants to upload their own dance, they can use the Uploader to submit their video to our server. On the other hand, the Discriminator client allows anyone to connect to the server from anywhere and receive scores for their dance performance.
+
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
@@ -62,7 +64,7 @@ Add additional notes about how to deploy this on a live system.
 - [Qt](https://www.qt.io/) - GUI Framework
 - [Nuitka](https://github.com/Nuitka/Nuitka) - Packaging App
 - [MediaPipe](https://google.github.io/mediapipe/) - for the Pose Detection
-- [VueJs](https://vuejs.org/) - Web Framework
+- [PHP](https://www.php.net/) - PHP
 - [NodeJs](https://nodejs.org/en/) - Server Environment
 
 ## ✍️ Authors <a name = "authors"></a>
