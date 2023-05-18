@@ -4,10 +4,6 @@ from openpyxl import Workbook
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_pose = mp.solutions.pose
-
 
 def convert(video_path, dev=False):
     parts_list = [
@@ -159,7 +155,7 @@ def convert(video_path, dev=False):
 
     c_cap = 2
     cap = cv2.VideoCapture(video_path)
-    with mp_pose.Pose(
+    with mp.solutions.pose.Pose(
         min_detection_confidence=0.5, min_tracking_confidence=0.5
     ) as pose:
         while cap.isOpened():
@@ -192,11 +188,11 @@ def convert(video_path, dev=False):
             if dev:
                 image.flags.writeable = True
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                mp_drawing.draw_landmarks(
+                mp.solutions.drawing_utils.draw_landmarks(
                     image,
                     results.pose_landmarks,
-                    mp_pose.POSE_CONNECTIONS,
-                    landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+                    mp.solutions.pose.POSE_CONNECTIONS,
+                    landmark_drawing_spec=mp.solutions.drawing_styles.get_default_pose_landmarks_style(),
                 )
                 # Flip the image horizontally for a selfie-view display.
                 cv2.imshow("Rigging your video", cv2.flip(image, 1))

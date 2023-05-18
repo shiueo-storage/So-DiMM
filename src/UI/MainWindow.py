@@ -38,10 +38,6 @@ from PySide6.QtWidgets import (
 import mediapipe as mp
 import playsound
 
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_pose = mp.solutions.pose
-
 global FPS, CURRENT_RANKING, CAM_W_TEXT_GLOB, ret, DATA1, GLOBAL_ID_INPUT, DATA2, MIN_LEN_DATA, cv_img, CAM_WIDTH, CAM_HEIGHT, JUMSOO_THREAD, CAM_IMAGE, WEBCAM, WEBCAM_ON, REAL_CAM_WIDTH, REAL_CAM_HEIGHT, LANDMARK, DOWNLOADED_VIDEO_PATH, VID_LALABEL, VID_PLAYING, OPTION_BOX_2_RECORD_START_GLOB, DANCE_SELECTED_GLOB, CURRENT_DANCE_VIDEO_PATH_GLOB, OPTION_BOX_2_STATUS_LABEL_GLOB
 
 
@@ -99,7 +95,7 @@ class VIDEOTHREAD(QThread):
         REAL_CAM_WIDTH = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
         REAL_CAM_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-        with mp_pose.Pose(
+        with mp.solutions.pose.Pose(
             min_detection_confidence=0.5, min_tracking_confidence=0.5
         ) as pose:
             while cap.isOpened():
@@ -120,11 +116,11 @@ class VIDEOTHREAD(QThread):
                 # Draw the pose annotation on the image.
                 image.flags.writeable = True
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                mp_drawing.draw_landmarks(
+                mp.solutions.drawing_utils.draw_landmarks(
                     image,
                     results.pose_landmarks,
-                    mp_pose.POSE_CONNECTIONS,
-                    landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style(),
+                    mp.solutions.pose.POSE_CONNECTIONS,
+                    landmark_drawing_spec=mp.solutions.drawing_styles.get_default_pose_landmarks_style(),
                 )
                 image = cv2.flip(image, 1)
                 self.change_pixmap_signal.emit(image)
