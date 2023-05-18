@@ -52,6 +52,13 @@ If you encounter any further issues, it is likely a problem with your virtual en
 
 ## 🔧 Running
 Please navigate to the directory where the So-DiMM project is installed and execute the [SoDiMM.py](https://github.com/shiueo-storage/So-DiMM/blob/main/SoDiMM.py) file.
+```
+python ./SoDiMM.py
+```
+or
+```
+python3 ./SoDiMM.py
+```
 
 ## 🎈 Usage <a name="usage"></a>
 So-DiMM features a very simple and intuitive GUI.
