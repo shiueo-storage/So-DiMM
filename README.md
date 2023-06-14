@@ -22,7 +22,7 @@
 
 ## 🧐 How to install
 
-`pip install -r requirements.txt`
+`pip install -r requirements.txt`  
 and run  
 `python ./SoDiMM.py`
 [**SoDiMM.py**](https://github.com/shiueo-storage/So-DiMM/blob/main/SoDiMM.py)
