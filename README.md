@@ -22,6 +22,9 @@
 
 ## 🧐 How to install
 
+`pip install -r requirements.txt`
+and run [**SoDiMM.py**](https://github.com/shiueo-storage/So-DiMM/blob/main/SoDiMM.py)
+
 ## ✍️ Authors <a name = "authors"></a>
 - [@shiueo](https://github.com/shiueo) - Frontend & Overall
 - [@ileeric](https://github.com/ileeric) - Backend
