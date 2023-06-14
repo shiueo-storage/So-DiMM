@@ -21,10 +21,12 @@
 </p>
 
 ## 🧐 How to install
-
+### Windows
 `pip install -r requirements.txt`  
 and run  
 `python ./SoDiMM.py`
+
+### Mac
 
 ## ✍️ Authors <a name = "authors"></a>
 - [@shiueo](https://github.com/shiueo) - Frontend & Overall
