@@ -32,9 +32,7 @@
 - [Acknowledgments](#acknowledgement)
 
 ## 🧐 About <a name = "about"></a>
-Currently, there are various approaches in the field of dance games. Some involve using VR devices to move the body, while others, such as Just Dance, require holding and moving a mobile phone. However, we have discovered that it is possible to capture joint movements using only a webcam. With this in mind, we have decided to create a user-friendly and convenient dance battle app that utilizes this method. By using the built-in webcam, users can easily and naturally perform dance moves.
-
-Our project is divided into two parts: the Uploader client responsible for video uploads and the Discriminator client for dance analysis and scoring. If someone wants to upload their own dance, they can use the Uploader to submit their video to our server. On the other hand, the Discriminator client allows anyone to connect to the server from anywhere and receive scores for their dance performance.
+현대 사회에서는 코로나 사태로 인해 사람들의 움직임이 줄어들고, 직접 나가는 일과 대면 활동이 감소하고 있습니다. 이로 인해 운동 부족 문제가 심각해지고 있습니다. 본 프로젝트는 이러한 문제를 해결하기 위해 카메라가 장착된 컴퓨터 환경에서 실행 가능하고, 유행하는 춤을 따라하는 정확도를 평가하여 랭킹을 매길 수 있는 소프트웨어를 개발하는 것을 목표로 합니다.
 
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
