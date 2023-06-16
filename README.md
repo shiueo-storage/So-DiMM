@@ -26,6 +26,9 @@
 and run  
 `python ./SoDiMM.py`
 
+## Backend
+[https://github.com/ileeric/SoDimm-Server](https://github.com/ileeric/SoDimm-Server)
+
 ## ✍️ Authors <a name = "authors"></a>
 - [@shiueo](https://github.com/shiueo) - Frontend & Overall
 - [@ileeric](https://github.com/ileeric) - Backend
