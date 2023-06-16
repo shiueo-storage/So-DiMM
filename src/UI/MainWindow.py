@@ -388,7 +388,7 @@ class sodimm_UI_MainWindow(QMainWindow):
         global CURRENT_RANKING
         print(btn.objectName())
         try:
-            param = {"apiName": "getRanking", "filename": btn.objectName()}
+            param = {"apiName": "getRanking", "filename": btn.objectName()+".mp4"}
             response = requests.post("https://kaist.me/api/ksa/DS/api.php", data=param)
             print(response.json())
             CURRENT_RANKING = response.json()

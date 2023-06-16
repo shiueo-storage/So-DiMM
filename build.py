@@ -43,3 +43,7 @@ build.build(
     plugin_dict=["pyside6"],
     include_package_dict=["mediapipe"],
 )
+
+"""
+python -m nuitka --clang --show-modules --follow-imports --windows-company-name=shiüo+ileeric --windows-product-version=1.0.3 --output-dir=D:\Github\So-DiMM\SoDiMM_build --verbose --assume-yes-for-downloads --enable-plugin=pyside6 --include-package=mediapipe --windows-icon-from-ico=D:\Github\So-DiMM\assets/sodimm_icon.png D:\Github\So-DiMM\SoDiMM.py
+"""
